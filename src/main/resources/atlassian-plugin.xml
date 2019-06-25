@@ -1,0 +1,16 @@
+<atlassian-plugin key="${atlassian.plugin.key}" name="${project.name}" plugins-version="2">
+    <plugin-info>
+        <description>${project.description}</description>
+        <version>${project.version}</version>
+        <vendor name="${project.organization.name}" url="${project.organization.url}" />
+    </plugin-info>
+
+    <!-- Web resources -->
+    <web-resource key="sourcegraph-bitbucket-resources" name="sourcegraph-bitbucket Web Resources">
+        <dependency>com.atlassian.auiplugin:ajs</dependency>
+        <resource type="download" name="sourcegraph-bitbucket.js" location="/js/sourcegraph-bitbucket.js"/>
+        <context>atl.general</context>
+    </web-resource>
+
+
+</atlassian-plugin>
