@@ -1,0 +1,18 @@
+<html>
+  <head>
+    <title>XProduct Admin</title>
+    <meta name="decorator" content="atl.admin">
+    $webResourceManager.requireResourcesForContext("sourcegraph-admin")
+  </head>
+  <body>
+    <form id="admin" class="aui">
+      <div class="field-group">
+        <label for="url">Sourcegraph URL</label>
+        <input type="text" id="url" name="url">
+      </div>
+      <div class="field-group">
+        <input type="submit" value="Save">
+      </div>
+    </form>
+  </body>
+</html>
