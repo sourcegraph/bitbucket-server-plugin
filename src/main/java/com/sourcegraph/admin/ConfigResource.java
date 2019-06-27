@@ -65,7 +65,7 @@ public class ConfigResource
     public Response get(@Context HttpServletRequest request)
     {
         String username = userManager.getRemoteUsername(request);
-        if (username == null || !userManager.isSystemAdmin(username))
+        if (username == null)
         {
             return Response.status(Status.UNAUTHORIZED).build();
         }
@@ -87,6 +87,7 @@ public class ConfigResource
     public Response put(final Config config, @Context HttpServletRequest request)
     {
         String username = userManager.getRemoteUsername(request);
+        // Only admins can set the Sourcegraph URL
         if (username == null || !userManager.isSystemAdmin(username))
         {
             return Response.status(Status.UNAUTHORIZED).build();
