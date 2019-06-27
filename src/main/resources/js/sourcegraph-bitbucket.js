@@ -5,7 +5,7 @@ AJS.toInit(() => {
         dataType: 'json'
     }).done(({ url }) => {
         if (!url) {
-            console.log('No Sourcegraph URL set')
+            console.log(`No Sourcegraph URL is set. To set a Sourcegraph URL, log in as a site admin and navigate to ${AJS.contextPath()}/plugins/servlet/sourcegraph.`)
             return
         }
         console.log(url)
