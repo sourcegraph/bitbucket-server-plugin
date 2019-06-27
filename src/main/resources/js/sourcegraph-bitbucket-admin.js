@@ -15,7 +15,6 @@ AJS.toInit(() => {
     const data = JSON.stringify({
       url: document.getElementById('url').value
     })
-    console.log(data)
     AJS.$.ajax({
       url: AJS.contextPath() + "/rest/sourcegraph-admin/1.0/",
       type: "PUT",
