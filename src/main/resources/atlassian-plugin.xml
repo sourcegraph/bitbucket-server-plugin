@@ -1,0 +1,37 @@
+<atlassian-plugin key="${atlassian.plugin.key}" name="${project.name}" plugins-version="2">
+    <plugin-info>
+        <description>${project.description}</description>
+        <version>${project.version}</version>
+        <vendor name="${project.organization.name}" url="${project.organization.url}" />
+    </plugin-info>
+
+    <!-- Web resources -->
+    <web-resource key="sourcegraph-bitbucket-resources" name="sourcegraph-bitbucket Web Resources">
+        <dependency>com.atlassian.auiplugin:ajs</dependency>
+        <resource type="download" name="sourcegraph-bitbucket.js" location="/js/sourcegraph-bitbucket.js"/>
+        <context>atl.general</context>
+    </web-resource>
+
+    <web-resource key="sourcegraph-bitbucket-admin" name="sourcegraph-bitbucket Web Resources">
+        <dependency>com.atlassian.auiplugin:ajs</dependency>
+        <resource type="download" name="sourcegraph-bitbucket-admin.js" location="/js/sourcegraph-bitbucket-admin.js"/>
+        <context>sourcegraph-admin</context>
+    </web-resource>
+
+    <!-- Admin configuration servlet -->
+    <servlet key="admin-servlet" class="com.sourcegraph.admin.AdminServlet">
+        <url-pattern>/sourcegraph</url-pattern>
+    </servlet>
+
+    <!-- Admin configuration link -->
+    <web-item key="sourcegraph-admin-tab" name="Sourcegraph Admin Settings" section="atl.admin/admin-plugins-section" weight="30">
+        <description>Connect Bitbucket to your Sourcegraph instance.</description>
+        <label>Sourcegraph</label>
+        <link linkId="sourcegraph-admin-link">/plugins/servlet/sourcegraph</link>
+    </web-item>
+
+    <rest key="rest" path="/sourcegraph-admin" version="1.0">
+        <description>Provides REST resources for the Sourcegraph admin UI.</description>
+    </rest>
+
+</atlassian-plugin>
