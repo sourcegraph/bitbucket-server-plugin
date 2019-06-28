@@ -14,7 +14,7 @@ AJS.toInit(() => {
         // from the Sourcegraph instance
         window.SOURCEGRAPH_URL = url
         window.localStorage.SOURCEGRAPH_URL = url
-        window.SOURCEGRAPH_PHABRICATOR_EXTENSION = true
+        window.SOURCEGRAPH_INTEGRATION = 'bitbucket-integration'
         var script = document.createElement('script')
         script.type = 'text/javascript'
         script.defer = true
