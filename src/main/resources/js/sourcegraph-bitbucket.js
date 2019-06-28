@@ -8,7 +8,6 @@ AJS.toInit(() => {
             console.log(`No Sourcegraph URL is set. To set a Sourcegraph URL, log in as a site admin and navigate to ${AJS.contextPath()}/plugins/servlet/sourcegraph.`)
             return
         }
-        console.log(url)
         // If a Sourcegraph URL is set,
         // inject a <script> tag to fetch the main JS bundle
         // from the Sourcegraph instance
