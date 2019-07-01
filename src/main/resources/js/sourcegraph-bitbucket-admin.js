@@ -6,7 +6,7 @@ AJS.toInit(() => {
     url,
     dataType: 'json'
   }).done(({ url }) => {
-    document.getElementById('url').value = url
+    document.getElementById('url').value = url || ''
   })
 
   // Update Sourcegraph URL when form is submitted.
