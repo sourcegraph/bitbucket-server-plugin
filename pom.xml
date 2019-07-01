@@ -101,6 +101,7 @@
                 <version>${amps.version}</version>
                 <extensions>true</extensions>
                 <configuration>
+                    <compressResources>false</compressResources>
                     <products>
                         <product>
                             <id>bitbucket</id>
