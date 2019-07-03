@@ -1,18 +1,36 @@
 <html>
-  <head>
-    <title>XProduct Admin</title>
-    <meta name="decorator" content="atl.admin">
-    $webResourceManager.requireResourcesForContext("sourcegraph-admin")
-  </head>
-  <body>
-    <form id="admin" class="aui">
-      <div class="field-group">
-        <label for="url">Sourcegraph URL</label>
-        <input type="text" id="url" name="url">
-      </div>
-      <div class="field-group">
-        <input type="submit" value="Save">
-      </div>
-    </form>
-  </body>
+
+    <head>
+        <title>Sourcegraph Settings</title>
+        <meta name="decorator" content="atl.admin">
+        $webResourceManager.requireResourcesForContext("sourcegraph-admin")
+    </head>
+
+    <body>
+        <header class="aui-page-header">
+            <div class="aui-page-header-inner">
+                <div class="aui-page-header-main">
+                   <h2>Sourcegraph Settings</h2>
+                </div>
+            </div>
+        </header>
+        <p>
+            Connect Bitbucket to your Sourcegraph instance to get code intelligence on code views and pull requests.
+        </p>
+        <form id="admin" class="aui">
+            <div class="field-group">
+                <label for="url">Sourcegraph URL:</label>
+                <input class="text long-field" type="text" id="url" name="url" autofocus>
+                <div class="description">
+                    This is the URL of your Sourcegraph instance. Example: https://sourcegraph.internal.org
+                </div>
+            </div>
+            <div class="buttons-container">
+                <div class="buttons">
+                    <input class="aui-button aui-button-primary" type="submit" id="submit" name="submit" value="Save" accesskey="s">
+                    <a id="cancel" class="aui-button aui-button-link cancel" name="cancel" accesskey="c" href="/admin" autocomplete="off" tabindex="0">Cancel</a></div>
+            </div>
+        </form>
+    </body>
+
 </html>
