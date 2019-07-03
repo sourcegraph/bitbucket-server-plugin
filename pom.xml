@@ -4,7 +4,7 @@
 
     <groupId>com.sourcegraph.plugins</groupId>
     <artifactId>sourcegraph-bitbucket</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0</version>
     <packaging>atlassian-plugin</packaging>
 
     <name>Sourcegraph</name>
