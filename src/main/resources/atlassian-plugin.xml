@@ -26,6 +26,7 @@
     <!-- Admin configuration link -->
     <web-item key="sourcegraph-admin-tab" name="Sourcegraph Admin Settings" section="atl.admin/admin-plugins-section" weight="30">
         <description>Connect Bitbucket to your Sourcegraph instance.</description>
+        <tooltip>Connect Bitbucket to your Sourcegraph instance.</tooltip>
         <label>Sourcegraph</label>
         <link linkId="sourcegraph-admin-link">/plugins/servlet/sourcegraph</link>
     </web-item>
