@@ -11,7 +11,7 @@ AJS.toInit(async () => {
     const response = await fetch(restURL)
     if (!response.ok) {
         messageContainer.classList.add(...errorClasses)
-        messageContainer.textContent = `Error fetching the Sourcegraph URL: received status code ${response.status}.`
+        messageContainer.textContent = `Error fetching the Sourcegraph URL: ${response.status} ${response.statusText}`
         messageContainer.classList.remove('hidden')
         return
     }
