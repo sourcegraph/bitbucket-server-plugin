@@ -7,12 +7,22 @@ AJS.toInit(async () => {
     const errorClasses = ['aui-message-error', 'error']
     const successClasses = ['aui-message-success', 'success']
 
+    /**
+     * Displays an error or success message in the `messageContainer` element.
+     *
+     * @param {string} type The type of the message as a string: `'error' | 'success'`.
+     * @param {string} message The message to display.
+     */
+    const showMessage = (type, message) => {
+        messageContainer.add(...(type === 'error' ? errorClasses : successClasses))
+        messageContainer.textContent = message
+        messageContainer.classList.remove('hidden')
+    }
+
     // Fetch Sourcegraph URL value on page load.
     const response = await fetch(restURL)
     if (!response.ok) {
-        messageContainer.classList.add(...errorClasses)
-        messageContainer.textContent = `Error fetching the Sourcegraph URL: ${response.status} ${response.statusText}`
-        messageContainer.classList.remove('hidden')
+        showMessage('error', `Error fetching the Sourcegraph URL: ${response.status} ${response.statusText}`)
         return
     }
 
@@ -39,12 +49,9 @@ AJS.toInit(async () => {
 
         // Display a success/error message
         if (!response.ok) {
-            messageContainer.classList.add(...errorClasses)
-            messageContainer.textContent = `Error saving the Sourcegraph URL: received status code ${response.status}.`
+            showMessage('error', `Error saving the Sourcegraph URL: received status code ${response.status}.`)
         } else {
-            messageContainer.classList.add(...successClasses)
-            messageContainer.textContent = `Sourcegraph URL successfully saved.`
+            showMessage('success', `Sourcegraph URL successfully saved.`)
         }
-        messageContainer.classList.remove('hidden')
     })
 })
