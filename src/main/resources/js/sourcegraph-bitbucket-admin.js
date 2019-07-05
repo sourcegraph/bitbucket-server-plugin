@@ -49,7 +49,7 @@ AJS.toInit(async () => {
 
         // Display a success/error message
         if (!response.ok) {
-            showMessage('error', `Error saving the Sourcegraph URL: received status code ${response.status}.`)
+            showMessage('error', `Error saving the Sourcegraph URL: ${response.status} ${response.statusText}.`)
         } else {
             showMessage('success', `Sourcegraph URL successfully saved.`)
         }
