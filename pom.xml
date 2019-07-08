@@ -7,7 +7,7 @@
     <version>1.0.0</version>
     <packaging>atlassian-plugin</packaging>
 
-    <name>Sourcegraph for Bitbucket</name>
+    <name>Sourcegraph for Bitbucket Server</name>
     <description>The Sourcegraph plugin for Bitbucket Server communicates with your Sourcegraph instance to add code intelligence to your Bitbucket Server code views and pull requests.</description>
 
     <organization>
