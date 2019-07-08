@@ -17,9 +17,9 @@ AJS.toInit(async () => {
     window.SOURCEGRAPH_URL = url
     window.localStorage.SOURCEGRAPH_URL = url
     window.SOURCEGRAPH_INTEGRATION = 'bitbucket-integration'
-    var script = document.createElement('script')
+    const script = document.createElement('script')
     script.type = 'text/javascript'
     script.defer = true
     script.src = url + '/.assets/extension/scripts/integration.bundle.js'
-    document.getElementsByTagName('head')[0].appendChild(script)
+    document.head.appendChild(script)
 })
