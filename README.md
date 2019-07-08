@@ -16,7 +16,7 @@ The Sourcegraph plugin for Bitbucket Server communicates with your Sourcegraph i
 
 ### Configuration
 
-After installing the Sourcegraph for Bitbucket, you should configure it to point to your Sourcegraph instance.
+After installing the Sourcegraph for Bitbucket Server, you should configure it to point to your Sourcegraph instance.
 
 1. On Bitbucket, go to the **Administration** page
 2. Find the **Sourcegraph** entry under **Add-ons**:
@@ -29,11 +29,13 @@ After installing the Sourcegraph for Bitbucket, you should configure it to point
 
 ### Usage
 
-Once configured, Sourcegraph for Bitbucket will add code intelligence hovers to code views and pull requests for all users that are logged in to your self-hosted Sourcegraph instance:
+Once configured, Sourcegraph for Bitbucket Server will add code intelligence hovers to code views and pull requests for all users that are logged in to your self-hosted Sourcegraph instance. It will also add links to view repositories, files and diffs on Sourcegraph.
 
 ![Code intelligence](img/code-intelligence.png)
 
-All activated [Sourcegraph extensions](https://docs.sourcegraph.com/extensions) will also be able to add information to Bitbucket server code views and pull requests, such as test coverage data or trace/log information.
+Additionally, activated [Sourcegraph extensions](https://docs.sourcegraph.com/extensions) will be able to add information to Bitbucket server code views and pull requests, such as test coverage data or trace/log information.
+
+If a user is not logged in to Sourcegraph, they will still see the "View Repository on Sourcegraph" links, but code intelligence hovers as well as any data contributed by Sourcegraph extensions will not be displayed.
 
 ## Local Development
 
