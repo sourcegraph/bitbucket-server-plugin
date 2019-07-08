@@ -17,6 +17,7 @@
         <p>
             Connect Bitbucket to your Sourcegraph instance to get code intelligence on code views and pull requests.
         </p>
+        <div class="aui-message hidden" id="message"></div>
         <form id="admin" class="aui">
             <div class="field-group">
                 <label for="url">Sourcegraph URL:</label>
