@@ -1,26 +1,57 @@
-AJS.toInit(() => {
-  const url = AJS.contextPath() + '/rest/sourcegraph-admin/1.0/'
+AJS.toInit(async () => {
+    const restURL = AJS.contextPath() + '/rest/sourcegraph-admin/1.0/'
+    const adminForm = document.getElementById('admin')
+    const submitBtn = document.getElementById('submit')
+    const messageContainer = document.getElementById('message')
+    const urlInput = document.getElementById('url')
+    const errorClasses = ['aui-message-error', 'error']
+    const successClasses = ['aui-message-success', 'success']
 
-  // Fetch Sourcegraph URL value on page load.
-  AJS.$.ajax({
-    url,
-    dataType: 'json'
-  }).done(({ url }) => {
-    document.getElementById('url').value = url || ''
-  })
+    /**
+     * Displays an error or success message in the `messageContainer` element.
+     *
+     * @param {string} type The type of the message as a string: `'error' | 'success'`.
+     * @param {string} message The message to display.
+     */
+    const showMessage = (type, message) => {
+        messageContainer.add(...(type === 'error' ? errorClasses : successClasses))
+        messageContainer.textContent = message
+        messageContainer.classList.remove('hidden')
+    }
 
-  // Update Sourcegraph URL when form is submitted.
-  AJS.$('#admin').submit(e => {
-    e.preventDefault()
-    const data = JSON.stringify({
-      url: document.getElementById('url').value
+    // Fetch Sourcegraph URL value on page load.
+    const response = await fetch(restURL)
+    if (!response.ok) {
+        showMessage('error', `Error fetching the Sourcegraph URL: ${response.status} ${response.statusText}`)
+        return
+    }
+
+    const { url } = await response.json()
+    urlInput.value = url || ''
+
+    // Update Sourcegraph URL when the form is submitted.
+    adminForm.addEventListener('submit', async e => {
+        e.preventDefault()
+        submitBtn.classList.add('disabled')
+        messageContainer.classList.remove(...errorClasses, ...successClasses)
+        messageContainer.classList.add('hidden')
+
+        const response = await fetch(restURL, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                url: document.getElementById('url').value,
+            }),
+        })
+        submitBtn.classList.remove('disabled')
+
+        // Display a success/error message
+        if (!response.ok) {
+            showMessage('error', `Error saving the Sourcegraph URL: ${response.status} ${response.statusText}.`)
+        } else {
+            showMessage('success', `Sourcegraph URL successfully saved.`)
+        }
     })
-    AJS.$.ajax({
-      url: AJS.contextPath() + "/rest/sourcegraph-admin/1.0/",
-      type: "PUT",
-      contentType: "application/json",
-      data,
-      processData: false
-    });
-  })
 })
