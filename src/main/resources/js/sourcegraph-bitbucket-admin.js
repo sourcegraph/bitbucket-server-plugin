@@ -14,7 +14,7 @@ AJS.toInit(async () => {
      * @param {string} message The message to display.
      */
     const showMessage = (type, message) => {
-        messageContainer.add(...(type === 'error' ? errorClasses : successClasses))
+        messageContainer.classList.add(...(type === 'error' ? errorClasses : successClasses))
         messageContainer.textContent = message
         messageContainer.classList.remove('hidden')
     }
