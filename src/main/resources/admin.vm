@@ -29,7 +29,7 @@
             <div class="buttons-container">
                 <div class="buttons">
                     <input class="aui-button aui-button-primary" type="submit" id="submit" name="submit" value="Save" accesskey="s">
-                    <a id="cancel" class="aui-button aui-button-link cancel" name="cancel" accesskey="c" href="/admin" autocomplete="off" tabindex="0">Cancel</a></div>
+                    <a id="cancel" class="aui-button aui-button-link cancel" name="cancel" accesskey="c" href="$baseUrl/admin" autocomplete="off" tabindex="0">Cancel</a></div>
             </div>
         </form>
     </body>
