@@ -14,6 +14,18 @@ The Sourcegraph plugin for Bitbucket Server communicates with your Sourcegraph i
     "corsOrigin": "https://bitbucket.internal.org"
 ```
 
+### Installation
+
+1. Log in to Bitbucket Server as an admin.
+2. Navigate to the Bitbucket admin page.
+3. Go to **Add-ons > Manage apps**.
+4. Click **Upload app**
+5. In the **From this URL** field, paste the following URL:
+
+```
+https://storage.googleapis.com/sourcegraph-for-bitbucket-server/latest.jar
+```
+
 ### Configuration
 
 After installing the Sourcegraph for Bitbucket Server, you should configure it to point to your Sourcegraph instance.
