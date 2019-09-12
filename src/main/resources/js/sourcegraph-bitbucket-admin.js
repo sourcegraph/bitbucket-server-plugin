@@ -28,6 +28,8 @@ AJS.toInit(async () => {
         const { url } = await response.json()
         urlInput.value = url || ''
       }
+    } catch (err) {
+        showMessage('error', `Error fetching the Sourcegraph URL: ${err.message || err}`)
     } finally {
       urlInput.disabled = false
       urlInput.focus()
