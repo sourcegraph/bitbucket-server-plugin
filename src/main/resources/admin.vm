@@ -21,7 +21,7 @@
         <form id="admin" class="aui">
             <div class="field-group">
                 <label for="url">Sourcegraph URL:</label>
-                <input class="text long-field" type="text" id="url" name="url" autofocus>
+                <input class="text long-field" type="text" id="url" name="url" disabled>
                 <div class="description">
                     This is the URL of your Sourcegraph instance. Example: https://sourcegraph.internal.org
                 </div>

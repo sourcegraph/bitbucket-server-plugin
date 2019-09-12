@@ -20,14 +20,20 @@ AJS.toInit(async () => {
     }
 
     // Fetch Sourcegraph URL value on page load.
-    const response = await fetch(restURL)
-    if (!response.ok) {
-        showMessage('error', `Error fetching the Sourcegraph URL: ${response.status} ${response.statusText}`)
-        return
+    try {
+      const response = await fetch(restURL)
+      if (!response.ok) {
+          showMessage('error', `Error fetching the Sourcegraph URL: ${response.status} ${response.statusText}`)
+      } else {
+        const { url } = await response.json()
+        urlInput.value = url || ''
+      }
+    } catch (err) {
+        showMessage('error', `Error fetching the Sourcegraph URL: ${err.message || err}`)
+    } finally {
+      urlInput.disabled = false
+      urlInput.focus()
     }
-
-    const { url } = await response.json()
-    urlInput.value = url || ''
 
     // Update Sourcegraph URL when the form is submitted.
     adminForm.addEventListener('submit', async e => {
