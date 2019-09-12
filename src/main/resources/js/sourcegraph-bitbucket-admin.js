@@ -29,7 +29,7 @@ AJS.toInit(async () => {
         urlInput.value = url || ''
       }
     } finally {
-      urlInput.removeAttribute('disabled')
+      urlInput.disabled = false
       urlInput.focus()
     }
 
