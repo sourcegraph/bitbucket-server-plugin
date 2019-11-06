@@ -7,6 +7,12 @@
         <param name="plugin-logo">images/pluginLogo.png</param>
     </plugin-info>
 
+    <!-- Active Objects module -->
+    <ao key="ao-module">
+        <entity>com.sourcegraph.webhook.registry.WebhookEntity</entity>
+        <entity>com.sourcegraph.webhook.registry.EventEntity</entity>
+    </ao>
+
     <!-- Web resources -->
     <web-resource key="sourcegraph-bitbucket-resources" name="sourcegraph-bitbucket Web Resources">
         <dependency>com.atlassian.auiplugin:ajs</dependency>
@@ -33,8 +39,8 @@
         <link linkId="sourcegraph-admin-link">/plugins/servlet/sourcegraph</link>
     </web-item>
 
+    <!-- REST service -->
     <rest key="rest" path="/sourcegraph-admin" version="1.0">
-        <description>Provides REST resources for the Sourcegraph admin UI.</description>
+        <description>Provides REST resources for Sourcegraph.</description>
     </rest>
-
 </atlassian-plugin>
