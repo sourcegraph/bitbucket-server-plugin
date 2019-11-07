@@ -27,22 +27,19 @@ import com.atlassian.sal.api.user.UserManager;
 
 @Path("/")
 @Component("configResource")
-public class ConfigResource
-{
+public class ConfigResource {
 
     @XmlRootElement
     @XmlAccessorType(XmlAccessType.FIELD)
-    public static final class Config
-    {
-        @XmlElement private String url;
+    public static final class Config {
+        @XmlElement
+        private String url;
 
-        public String getURL()
-        {
+        public String getURL() {
             return url;
         }
 
-        public void setURL(String url)
-        {
+        public void setURL(String url) {
             this.url = url;
         }
     }
@@ -53,8 +50,7 @@ public class ConfigResource
 
     @Autowired
     public ConfigResource(@ComponentImport UserManager userManager, @ComponentImport PluginSettingsFactory pluginSettingsFactory,
-    @ComponentImport TransactionTemplate transactionTemplate)
-    {
+                          @ComponentImport TransactionTemplate transactionTemplate) {
         this.userManager = userManager;
         this.pluginSettingsFactory = pluginSettingsFactory;
         this.transactionTemplate = transactionTemplate;
@@ -62,47 +58,34 @@ public class ConfigResource
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Response get(@Context HttpServletRequest request)
-    {
+    public Response get(@Context HttpServletRequest request) {
         String username = userManager.getRemoteUsername(request);
-        if (username == null)
-        {
+        if (username == null) {
             return Response.status(Status.UNAUTHORIZED).build();
         }
 
-        return Response.ok(transactionTemplate.execute(new TransactionCallback()
-        {
-            public Object doInTransaction()
-            {
-                PluginSettings settings = pluginSettingsFactory.createGlobalSettings();
-                Config config = new Config();
-                config.setURL((String) settings.get("sourcegraph.url"));
-                return config;
-            }
+        return Response.ok(transactionTemplate.execute(() -> {
+            PluginSettings settings = pluginSettingsFactory.createGlobalSettings();
+            Config config = new Config();
+            config.setURL((String) settings.get("sourcegraph.url"));
+            return config;
         })).build();
     }
 
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response put(final Config config, @Context HttpServletRequest request)
-    {
+    public Response put(final Config config, @Context HttpServletRequest request) {
         String username = userManager.getRemoteUsername(request);
         // Only admins can set the Sourcegraph URL
-        if (username == null || !userManager.isSystemAdmin(username))
-        {
+        if (username == null || !userManager.isSystemAdmin(username)) {
             return Response.status(Status.UNAUTHORIZED).build();
         }
 
-        transactionTemplate.execute(new TransactionCallback()
-        {
-            public Object doInTransaction()
-            {
-                PluginSettings pluginSettings = pluginSettingsFactory.createGlobalSettings();
-                pluginSettings.put("sourcegraph.url", config.getURL());
-                return null;
-            }
+        transactionTemplate.execute(() -> {
+            PluginSettings pluginSettings = pluginSettingsFactory.createGlobalSettings();
+            pluginSettings.put("sourcegraph.url", config.getURL());
+            return null;
         });
         return Response.noContent().build();
     }
-
 }
