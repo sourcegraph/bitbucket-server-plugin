@@ -1,22 +1,19 @@
 package com.sourcegraph.webhook;
 
 import com.atlassian.bitbucket.event.ApplicationEvent;
-import com.atlassian.bitbucket.event.backup.BackupStartedEvent;
-import com.atlassian.bitbucket.event.permission.PermissionEvent;
 import com.atlassian.bitbucket.event.pull.*;
 import com.atlassian.bitbucket.repository.Repository;
-import com.atlassian.bitbucket.scm.event.ScmEvent;
 import com.atlassian.event.api.AsynchronousPreferred;
 import com.atlassian.event.api.EventListener;
-import com.google.common.base.Joiner;
-import com.google.gson.Gson;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.sourcegraph.webhook.registry.Webhook;
 import com.sourcegraph.webhook.registry.WebhookRegistry;
 
 import javax.inject.Named;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @AsynchronousPreferred
 @Named("WebhookListener")

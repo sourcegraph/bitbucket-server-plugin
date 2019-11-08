@@ -1,10 +1,11 @@
 package com.sourcegraph.webhook.registry;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.bitbucket.project.Project;
+import com.atlassian.bitbucket.project.ProjectService;
 import com.atlassian.bitbucket.repository.Repository;
+import com.atlassian.bitbucket.repository.RepositoryService;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
-import com.google.common.base.Function;
-import com.google.common.base.Functions;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Iterables;
 import net.java.ao.Query;
@@ -17,10 +18,16 @@ import java.util.*;
 public class WebhookRegistry {
     @ComponentImport
     private static ActiveObjects activeObjects;
+    @ComponentImport
+    private static ProjectService projects;
+    @ComponentImport
+    private static RepositoryService repositories;
 
     @Autowired
-    public WebhookRegistry(ActiveObjects ao) {
+    public WebhookRegistry(ActiveObjects ao, ProjectService projects, RepositoryService repositories) {
         WebhookRegistry.activeObjects = ao;
+        WebhookRegistry.projects = projects;
+        WebhookRegistry.repositories = repositories;
     }
 
     public static List<Webhook> getWebhooks() {
@@ -30,9 +37,9 @@ public class WebhookRegistry {
 
     public static List<Webhook> getWebhooks(List<String> keys, Repository repository) {
         String params = Joiner.on(", ").join(Collections.nCopies(keys.size(), "?"));
-        Iterable<String> args = Iterables.concat(keys, Arrays.asList(
-                repository.getName(),
-                repository.getProject().getName()
+        Iterable<Object> args = Iterables.concat(keys, Arrays.asList(
+                repository.getId(),
+                repository.getProject().getId()
         ));
 
         String where = "event.EVENT in (" + params + ") "
@@ -58,16 +65,19 @@ public class WebhookRegistry {
                 events.add(ev.getEvent());
             }
 
-            hooks.add(new Webhook(ent.getID(), ent.getScope(), ent.getIdentifier(), events, ent.getExternal()));
+            String name = resolveName(ent.getScope(), ent.getIdentifier());
+            hooks.add(new Webhook(ent.getID(), ent.getScope(), name, events, ent.getExternal()));
         }
         return hooks;
     }
 
-    public static void register(Webhook hook) {
+    public static void register(Webhook hook) throws WebhookException {
+        int identifier = resolveID(hook.scope, hook.identifier);
+
         activeObjects.executeInTransaction(() -> {
             Map<String, Object> params = new HashMap<>();
             params.put("SCOPE", hook.scope);
-            params.put("IDENTIFIER", hook.identifier);
+            params.put("IDENTIFIER", identifier);
             params.put("EXTERNAL", hook.external);
 
             WebhookEntity hookEntity = activeObjects.create(WebhookEntity.class, params);
@@ -90,5 +100,40 @@ public class WebhookRegistry {
             activeObjects.deleteWithSQL(WebhookEntity.class, "ID = ?", id);
             return null;
         });
+    }
+
+    private static int resolveID(String scope, String name) throws WebhookException {
+        switch (scope) {
+            case "repository":
+                String[] split = name.split("/");
+                Repository repository = repositories.getBySlug(split[0], split[1]);
+                if (repository == null) {
+                    throw new WebhookException("No such repository: " + name);
+                }
+                return repository.getId();
+            case "project":
+                Project project = projects.getByName(name);
+                if (project == null) {
+                    throw new WebhookException("No such project: " + name);
+                }
+                return project.getId();
+            case "global":
+                return 0;
+            default:
+                throw new WebhookException("Invalid scope: " + scope);
+        }
+    }
+
+    private static String resolveName(String scope, int id) {
+        switch (scope) {
+            case "repository":
+                Repository repository = repositories.getById(id);
+                return repository == null ? "" : repository.getName();
+            case "project":
+                Project project = projects.getById(id);
+                return project == null ? "" : project.getName();
+            default:
+                return "";
+        }
     }
 }

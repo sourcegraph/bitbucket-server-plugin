@@ -2,6 +2,7 @@ package com.sourcegraph.webhook;
 
 import com.google.gson.Gson;
 import com.sourcegraph.webhook.registry.Webhook;
+import com.sourcegraph.webhook.registry.WebhookException;
 import com.sourcegraph.webhook.registry.WebhookRegistry;
 
 import javax.ws.rs.*;
@@ -33,7 +34,13 @@ public class WebhookRouter {
         Collections.addAll(hook.events, events.split(","));
         System.out.println(hook.events.size());
         System.out.println("REGISTERING: " + new Gson().toJson(hook));
-        WebhookRegistry.register(hook);
+
+        try {
+            WebhookRegistry.register(hook);
+        } catch (WebhookException e) {
+            return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
+        }
+
         return Response.ok().build();
     }
 
