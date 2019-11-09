@@ -12,6 +12,8 @@ import net.java.ao.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.core.Response;
 import java.util.*;
 
 @Component
@@ -59,6 +61,7 @@ public class WebhookRegistry {
 
     private static List<Webhook> getWebhooksFromEntities(WebhookEntity[] entities) {
         List<Webhook> hooks = new ArrayList<>(entities.length);
+
         for (WebhookEntity ent : entities) {
             Set<String> events = new HashSet<>();
             for (EventEntity ev : ent.getEvents()) {
@@ -108,19 +111,19 @@ public class WebhookRegistry {
                 String[] split = name.split("/");
                 Repository repository = repositories.getBySlug(split[0], split[1]);
                 if (repository == null) {
-                    throw new WebhookException("No such repository: " + name);
+                    throw new WebhookException(Response.Status.NOT_FOUND, "No such repository: " + name);
                 }
                 return repository.getId();
             case "project":
                 Project project = projects.getByName(name);
                 if (project == null) {
-                    throw new WebhookException("No such project: " + name);
+                    throw new WebhookException(Response.Status.NOT_FOUND, "No such project: " + name);
                 }
                 return project.getId();
             case "global":
                 return 0;
             default:
-                throw new WebhookException("Invalid scope: " + scope);
+                throw new WebhookException(WebhookException.Status.UNPROCESSABLE_ENTITY, "Invalid scope: " + scope);
         }
     }
 

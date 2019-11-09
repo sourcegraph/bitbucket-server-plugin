@@ -28,19 +28,14 @@ public class WebhookRouter {
             @FormParam("scope") String scope,
             @FormParam("identifier") String identifier,
             @FormParam("events") String events,
-            @FormParam("external") String external) {
+            @FormParam("external") String external) throws WebhookException {
         // TODO - Form Data Validation
         Webhook hook = new Webhook(0, scope, identifier, new HashSet<>(), external);
         Collections.addAll(hook.events, events.split(","));
         System.out.println(hook.events.size());
         System.out.println("REGISTERING: " + new Gson().toJson(hook));
 
-        try {
-            WebhookRegistry.register(hook);
-        } catch (WebhookException e) {
-            return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
-        }
-
+        WebhookRegistry.register(hook);
         return Response.ok().build();
     }
 

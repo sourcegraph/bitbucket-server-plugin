@@ -17,6 +17,7 @@ import java.util.concurrent.ExecutorService;
 @Component
 public class Dispatcher {
     private static final Logger log = LoggerFactory.getLogger(Dispatcher.class);
+    private static final int RETRY_DELAY = 10 * 1000;
     @ComponentImport
     private static ExecutorService executor;
     @ComponentImport
@@ -50,12 +51,12 @@ public class Dispatcher {
                 }
 
                 if (retries == 0) {
-                    log.debug("Dispatching webhook data to URL: [" + external + "] failed after 5 attempts..");
+                    log.warn("Dispatching webhook data to URL: [" + external + "] failed after 5 attempts..");
                     break;
                 }
 
                 try {
-                    Thread.sleep(10 * 1000);
+                    Thread.sleep(RETRY_DELAY);
                 } catch (InterruptedException e) {
                     log.debug("Dispatching webhook data to URL: [" + external + "] was interrupted.");
                     break;
