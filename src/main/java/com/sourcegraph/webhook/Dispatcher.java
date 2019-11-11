@@ -48,7 +48,6 @@ public class Dispatcher {
     }
 
     public static void dispatch(Webhook hook, JsonObject payload) {
-        // System.out.println(external + " " + new Gson().toJson(payload));
 
         executor.submit(() -> {
             Request request = requestFactory.createRequest(Request.MethodType.POST, hook.endpoint);
