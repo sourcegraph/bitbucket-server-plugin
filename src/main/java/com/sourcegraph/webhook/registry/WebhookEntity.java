@@ -4,6 +4,8 @@ import net.java.ao.Entity;
 import net.java.ao.OneToMany;
 
 public interface WebhookEntity extends Entity {
+    String getName();
+
     String getScope();
 
     int getIdentifier();
@@ -11,5 +13,7 @@ public interface WebhookEntity extends Entity {
     @OneToMany
     EventEntity[] getEvents();
 
-    String getExternal();
+    String getEndpoint();
+
+    String getSecret();
 }

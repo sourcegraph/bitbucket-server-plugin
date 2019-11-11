@@ -14,7 +14,7 @@ import java.util.Map;
 
 @Component
 public class EventSerializer {
-    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
+    private static final SimpleDateFormat RFC3339 = new SimpleDateFormat("yyyy-MM-dd'T'h:m:ssZZZZZ");
     private static Map<Class<?>, Adapter> adapters = new HashMap<>();
     private static JsonRenderer renderer;
 
@@ -74,7 +74,7 @@ public class EventSerializer {
         payload.addProperty("eventKey", name);
     }
 
-    public JsonElement serialize(ApplicationEvent event) {
+    public JsonObject serialize(ApplicationEvent event) {
         buildApplicationEvent(event);
         if (event instanceof PullRequestEvent) {
             buildPullRequestEvent((PullRequestEvent) event);
@@ -89,7 +89,7 @@ public class EventSerializer {
     }
 
     private void buildApplicationEvent(ApplicationEvent event) {
-        payload.addProperty("date", DATE_FORMAT.format(event.getDate()));
+        payload.addProperty("date", RFC3339.format(event.getDate()));
         payload.add("actor", render(event.getUser()));
     }
 

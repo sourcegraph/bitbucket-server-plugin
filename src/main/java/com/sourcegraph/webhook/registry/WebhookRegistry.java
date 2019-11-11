@@ -12,7 +12,6 @@ import net.java.ao.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.Response;
 import java.util.*;
 
@@ -69,7 +68,7 @@ public class WebhookRegistry {
             }
 
             String name = resolveName(ent.getScope(), ent.getIdentifier());
-            hooks.add(new Webhook(ent.getID(), ent.getScope(), name, events, ent.getExternal()));
+            hooks.add(new Webhook(ent.getID(), ent.getName(), ent.getScope(), name, events, ent.getEndpoint(), ent.getSecret()));
         }
         return hooks;
     }
@@ -80,8 +79,10 @@ public class WebhookRegistry {
         activeObjects.executeInTransaction(() -> {
             Map<String, Object> params = new HashMap<>();
             params.put("SCOPE", hook.scope);
+            params.put("NAME", hook.name);
             params.put("IDENTIFIER", identifier);
-            params.put("EXTERNAL", hook.external);
+            params.put("ENDPOINT", hook.endpoint);
+            params.put("SECRET", hook.secret);
 
             WebhookEntity hookEntity = activeObjects.create(WebhookEntity.class, params);
             hookEntity.save();
