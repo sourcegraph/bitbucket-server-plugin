@@ -33,6 +33,7 @@ public class WebhookListener {
     }
 
     static {
+        register(PullRequestReopenedEvent.class, "pr:opened");
         register(PullRequestOpenedEvent.class, "pr:opened");
         register(PullRequestUpdatedEvent.class, "pr:modified");
         register(PullRequestReviewersUpdatedEvent.class, "pr:reviewer:updated");
