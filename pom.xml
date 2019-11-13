@@ -47,6 +47,11 @@
 
     <dependencies>
         <dependency>
+            <groupId>javax.inject</groupId>
+            <artifactId>javax.inject</artifactId>
+            <version>1</version>
+        </dependency>
+        <dependency>
             <groupId>com.atlassian.bitbucket.server</groupId>
             <artifactId>bitbucket-api</artifactId>
             <scope>provided</scope>
@@ -61,6 +66,12 @@
             <artifactId>javax.ws.rs-api</artifactId>
             <scope>provided</scope>
             <version>2.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.activeobjects</groupId>
+            <artifactId>activeobjects-plugin</artifactId>
+            <version>1.2.3</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.atlassian.plugin</groupId>
@@ -90,7 +101,11 @@
             <artifactId>sal-api</artifactId>
             <scope>provided</scope>
         </dependency>
-
+        <dependency>
+            <groupId>com.atlassian.bitbucket.server</groupId>
+            <artifactId>bitbucket-spi</artifactId>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -152,7 +167,7 @@
                             <artifactId>atlassian-spring-scanner-external-jar</artifactId>
                         </dependency>
                     </scannedDependencies>
-                    <verbose>false</verbose>
+                    <verbose>true</verbose>
                 </configuration>
             </plugin>
         </plugins>
