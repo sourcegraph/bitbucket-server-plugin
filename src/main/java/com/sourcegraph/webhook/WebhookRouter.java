@@ -3,23 +3,15 @@ package com.sourcegraph.webhook;
 import com.google.gson.Gson;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonSyntaxException;
-import com.google.gson.stream.JsonReader;
 import com.sourcegraph.webhook.registry.Webhook;
 import com.sourcegraph.webhook.registry.WebhookException;
 import com.sourcegraph.webhook.registry.WebhookRegistry;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 
 @Path("/webhook")
