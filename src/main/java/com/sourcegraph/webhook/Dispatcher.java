@@ -47,12 +47,14 @@ public class Dispatcher {
     private static Request createRequest(Webhook hook, EventSerializer serializer) {
         Request request = requestFactory.createRequest(Request.MethodType.POST, hook.endpoint);
         request.setHeader("X-Event-Key", serializer.getName());
+        request.setHeader("X-Hook-ID", String.valueOf(hook.id));
+        request.setHeader("X-Hook-Name", hook.name);
         JsonObject payload = serializer.serialize();
         String json = new Gson().toJson(payload);
         request.setRequestBody(json);
 
         try {
-            request.setHeader("X-Signature", sign(hook.secret, json));
+            request.setHeader("X-Hub-Signature", sign(hook.secret, json));
         } catch (InvalidKeyException | NoSuchAlgorithmException e) {
             log.error(e.toString());
             return null;

@@ -106,6 +106,19 @@ public class WebhookRegistry {
         });
     }
 
+    public static void deregister(String name) {
+        activeObjects.executeInTransaction(() -> {
+            WebhookEntity[] hooks = activeObjects.find(WebhookEntity.class, "NAME = ?", name);
+            for (WebhookEntity hook : hooks) {
+                for (EventEntity event : hook.getEvents()) {
+                    activeObjects.delete(event);
+                }
+                activeObjects.delete(hook);
+            }
+            return null;
+        });
+    }
+
     private static int resolveID(String scope, String name) throws WebhookException {
         switch (scope) {
             case "repository":

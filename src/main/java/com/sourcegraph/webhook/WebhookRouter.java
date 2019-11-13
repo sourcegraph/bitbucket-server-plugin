@@ -48,8 +48,13 @@ public class WebhookRouter {
 
     @DELETE
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    public Response delete(@FormParam("id") int id) {
-        WebhookRegistry.deregister(id);
+    public Response delete(@FormParam("id") int id, @FormParam("name") String name) {
+        if (name != null) {
+            WebhookRegistry.deregister(name);
+        } else {
+            WebhookRegistry.deregister(id);
+        }
+
         return Response.noContent().build();
     }
 }
