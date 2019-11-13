@@ -6,6 +6,7 @@ import com.atlassian.sal.api.net.RequestFactory;
 import com.atlassian.sal.api.net.Response;
 import com.atlassian.sal.api.net.ResponseException;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.sourcegraph.webhook.registry.Webhook;
 import org.slf4j.Logger;
@@ -49,8 +50,12 @@ public class Dispatcher {
         request.setHeader("X-Event-Key", serializer.getName());
         request.setHeader("X-Hook-ID", String.valueOf(hook.id));
         request.setHeader("X-Hook-Name", hook.name);
+
         JsonObject payload = serializer.serialize();
-        String json = new Gson().toJson(payload);
+        Gson gson = new GsonBuilder()
+                .excludeFieldsWithoutExposeAnnotation()
+                .create();
+        String json = gson.toJson(payload);
         request.setRequestBody(json);
 
         try {
