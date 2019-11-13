@@ -10,4 +10,5 @@ public interface EventEntity extends Entity {
     WebhookEntity getWebhook();
 
     void setWebhook(WebhookEntity hook);
+
 }

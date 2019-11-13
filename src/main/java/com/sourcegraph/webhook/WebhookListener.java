@@ -5,7 +5,6 @@ import com.atlassian.bitbucket.event.pull.*;
 import com.atlassian.bitbucket.repository.Repository;
 import com.atlassian.event.api.AsynchronousPreferred;
 import com.atlassian.event.api.EventListener;
-import com.google.gson.JsonObject;
 import com.sourcegraph.webhook.registry.Webhook;
 import com.sourcegraph.webhook.registry.WebhookRegistry;
 
@@ -65,8 +64,8 @@ public class WebhookListener {
         }
 
         String key = keys.get(keys.size() - 1);
-        EventSerializer serializer = new EventSerializer(key);
-        JsonObject payload = serializer.serialize(event);
-        hooks.forEach(hook -> Dispatcher.dispatch(hook, payload));
+        EventSerializer serializer = new EventSerializer(key, event);
+        hooks.forEach(hook -> Dispatcher.dispatch(hook, serializer));
     }
+
 }

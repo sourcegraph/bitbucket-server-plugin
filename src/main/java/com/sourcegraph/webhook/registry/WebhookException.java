@@ -48,4 +48,5 @@ public class WebhookException extends Exception implements ExceptionMapper<Webho
             return this.reason;
         }
     }
+
 }

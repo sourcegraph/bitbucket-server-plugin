@@ -18,10 +18,13 @@ public class EventSerializer {
     private static Map<Class<?>, Adapter> adapters = new HashMap<>();
     private static JsonRenderer renderer;
 
+    private ApplicationEvent event;
+    private String name;
     private JsonObject payload;
 
     private static JsonElement render(Object o) {
-        String raw = renderer.render(o, new HashMap<>());
+        HashMap<String, Object> options = new HashMap<>();
+        String raw = renderer.render(o, options);
         return raw == null ? null : new JsonParser().parse(raw);
     }
 
@@ -69,23 +72,31 @@ public class EventSerializer {
         EventSerializer.renderer = renderer;
     }
 
-    public EventSerializer(String name) {
+    public EventSerializer(String name, ApplicationEvent event) {
         payload = new JsonObject();
-        payload.addProperty("eventKey", name);
+        this.name = name;
+        this.event = event;
     }
 
-    public JsonObject serialize(ApplicationEvent event) {
-        buildApplicationEvent(event);
+    public JsonObject serialize() {
+        buildApplicationEvent(this.event);
         if (event instanceof PullRequestEvent) {
             buildPullRequestEvent((PullRequestEvent) event);
         }
 
         Adapter adapter = adapters.get(event.getClass());
-        if (adapter == null) {
-            return payload;
+        if (adapter != null) {
+            adapter.apply(payload, event);
         }
-        adapter.apply(payload, event);
         return payload;
+    }
+
+    public String getName() {
+        return this.name;
+    }
+
+    public ApplicationEvent getEvent() {
+        return this.event;
     }
 
     private void buildApplicationEvent(ApplicationEvent event) {
@@ -100,4 +111,5 @@ public class EventSerializer {
     private interface Adapter<T> {
         void apply(JsonObject element, T event);
     }
+    
 }
