@@ -60,5 +60,4 @@ public class WebhookRouter {
         WebhookRegistry.deregister(id);
         return Response.noContent().build();
     }
-
 }

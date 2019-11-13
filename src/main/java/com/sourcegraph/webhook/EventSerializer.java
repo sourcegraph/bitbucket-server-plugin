@@ -111,5 +111,4 @@ public class EventSerializer {
     private interface Adapter<T> {
         void apply(JsonObject element, T event);
     }
-    
 }

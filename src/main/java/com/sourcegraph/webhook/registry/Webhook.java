@@ -29,5 +29,4 @@ public class Webhook {
         this.endpoint = endpoint;
         this.secret = secret;
     }
-
 }

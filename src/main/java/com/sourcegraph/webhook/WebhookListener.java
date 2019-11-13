@@ -67,5 +67,4 @@ public class WebhookListener {
         EventSerializer serializer = new EventSerializer(key, event);
         hooks.forEach(hook -> Dispatcher.dispatch(hook, serializer));
     }
-
 }

@@ -16,5 +16,4 @@ public interface WebhookEntity extends Entity {
     String getEndpoint();
 
     String getSecret();
-
 }
