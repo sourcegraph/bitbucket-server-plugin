@@ -52,10 +52,7 @@ public class Dispatcher {
         request.setHeader("X-Hook-Name", hook.name);
 
         JsonObject payload = serializer.serialize();
-        Gson gson = new GsonBuilder()
-                .excludeFieldsWithoutExposeAnnotation()
-                .create();
-        String json = gson.toJson(payload);
+        String json = new Gson().toJson(payload);
         request.setRequestBody(json);
 
         try {
