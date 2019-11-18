@@ -11,10 +11,16 @@ The Sourcegraph Bitbucket plugin provides an internal implementation for webhook
 ## Payload
 
 ## REST API
+Interacting with the webhook REST endpoints requires [authentication](https://developer.atlassian.com/server/bitbucket/how-tos/example-basic-authentication/) from a system admin account.
 
-### List
+#### List
+```
+$ curl -X GET 'https://${BITBUCKET_SERVER_URL}/rest/sourcegraph-admin/1.0/webhook'
+```
+Output: JSON serialized `[]Webhook`  
+Ex: `[{"id":1,"name":"test","scope":"global","identifier":"","events":["pr"],"endpoint":"endpoint","secret":"secret"}]`
 
-### Create
+#### Create
 
-### Delete
+#### Delete
 
