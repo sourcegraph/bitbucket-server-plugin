@@ -9,6 +9,9 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.sourcegraph.webhook.registry.Webhook;
+import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.codec.digest.HmacAlgorithms;
+import org.apache.commons.codec.digest.HmacUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,11 +41,9 @@ public class Dispatcher {
         Dispatcher.requestFactory = requestFactory;
     }
 
-    private static String sign(String secret, String data) throws NoSuchAlgorithmException, InvalidKeyException {
-        Mac mac = Mac.getInstance("HmacSHA1");
-        SecretKeySpec secretKeySpec = new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), "HmacSHA1");
-        mac.init(secretKeySpec);
-        return Base64.getEncoder().encodeToString(mac.doFinal(data.getBytes(StandardCharsets.UTF_8)));
+    private static String sign(String secret, String data) {
+        HmacUtils hmac = new HmacUtils(HmacAlgorithms.HMAC_SHA_256, secret);
+        return hmac.hmacHex(data);
     }
 
     private static Request createRequest(Webhook hook, EventSerializer serializer) {
@@ -54,23 +55,13 @@ public class Dispatcher {
         JsonObject payload = serializer.serialize();
         String json = new Gson().toJson(payload);
         request.setRequestBody(json);
-
-        try {
-            request.setHeader("X-Hub-Signature", sign(hook.secret, json));
-        } catch (InvalidKeyException | NoSuchAlgorithmException e) {
-            log.error(e.toString());
-            return null;
-        }
-
+        request.setHeader("X-Hub-Signature", sign(hook.secret, json));
         return request;
     }
 
     public static void dispatch(Webhook hook, EventSerializer serializer) {
         executor.submit(() -> {
             Request request = createRequest(hook, serializer);
-            if (request == null) {
-                return;
-            }
 
             int attempt = 0;
             while (true) {
