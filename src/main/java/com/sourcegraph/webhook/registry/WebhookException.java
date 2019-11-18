@@ -11,6 +11,10 @@ public class WebhookException extends Exception implements ExceptionMapper<Webho
     public WebhookException() {
     }
 
+    public WebhookException(Response.StatusType status) {
+        this.status = status;
+    }
+
     public WebhookException(Response.StatusType status, String message) {
         super(message);
         this.status = status;

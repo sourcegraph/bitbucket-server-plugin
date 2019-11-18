@@ -4,6 +4,7 @@ import com.atlassian.bitbucket.server.ApplicationPropertiesService;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.sal.api.auth.LoginUriProvider;
 import com.atlassian.sal.api.user.UserManager;
+import com.atlassian.sal.api.user.UserProfile;
 import com.atlassian.templaterenderer.TemplateRenderer;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,8 +39,8 @@ public class AdminServlet extends HttpServlet {
 
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-        String username = userManager.getRemoteUsername(request);
-        if (username == null || !userManager.isSystemAdmin(username)) {
+        UserProfile user = userManager.getRemoteUser(request);
+        if (user == null || !userManager.isSystemAdmin(user.getUserKey())) {
             redirectToLogin(request, response);
             return;
         }

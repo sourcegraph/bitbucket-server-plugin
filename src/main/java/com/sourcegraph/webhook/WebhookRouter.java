@@ -1,5 +1,8 @@
 package com.sourcegraph.webhook;
 
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
+import com.atlassian.sal.api.user.UserManager;
+import com.atlassian.sal.api.user.UserProfile;
 import com.google.gson.Gson;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonSyntaxException;
@@ -8,19 +11,38 @@ import com.sourcegraph.webhook.registry.WebhookException;
 import com.sourcegraph.webhook.registry.WebhookRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
 
 @Path("/webhook")
+@Component
 public class WebhookRouter {
     private static final Logger log = LoggerFactory.getLogger(WebhookRouter.class);
+    private final UserManager userManager;
+
+    @Autowired
+    public WebhookRouter(@ComponentImport UserManager userManager) {
+        this.userManager = userManager;
+    }
+
+    private void authorize(HttpServletRequest request) throws WebhookException {
+        UserProfile user = userManager.getRemoteUser(request);
+        if (user == null || !userManager.isSystemAdmin(user.getUserKey())) {
+            throw new WebhookException(Response.Status.UNAUTHORIZED);
+        }
+    }
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Response get() {
+    public Response get(@Context HttpServletRequest request) throws WebhookException {
+        authorize(request);
         List<Webhook> hooks = WebhookRegistry.getWebhooks();
         String resp = new Gson().toJson(hooks);
         return Response.ok(resp).build();
@@ -28,7 +50,8 @@ public class WebhookRouter {
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response put(String raw) throws WebhookException {
+    public Response put(@Context HttpServletRequest request, String raw) throws WebhookException {
+        authorize(request);
         try {
             Gson gson = new Gson();
             Webhook hook = gson.fromJson(raw, Webhook.class);
@@ -48,7 +71,8 @@ public class WebhookRouter {
 
     @DELETE
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    public Response delete(@FormParam("id") int id, @FormParam("name") String name) {
+    public Response delete(@Context HttpServletRequest request, @FormParam("id") int id, @FormParam("name") String name) throws WebhookException {
+        authorize(request);
         if (name != null) {
             WebhookRegistry.deregister(name);
         } else {
