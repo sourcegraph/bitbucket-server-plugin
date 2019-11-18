@@ -66,7 +66,7 @@ public class WebhookRouter {
             throw new WebhookException(Response.Status.BAD_REQUEST, "Invalid JSON");
         }
 
-        return Response.ok().build();
+        return Response.noContent().build();
     }
 
     @DELETE
