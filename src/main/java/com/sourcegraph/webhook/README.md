@@ -17,8 +17,7 @@ Each request has the following headers:
 - `X-Hook-Name` - The name of the webhook that sends the request
 - `X-Hub-Signature` - HMAC SHA256 hash of the payload (request body)
 
-The payload is stored in the request body as a JSON object. They follow the schema specified in [Event Payload](https://confluence.atlassian.com/bitbucketserver0516/event-payload-966061436.html?utm_campaign=in-app-help&utm_medium=in-app-help&utm_source=stash#Eventpayload-repositoryevents) and
-[Bitbucket Entities](https://docs.atlassian.com/bitbucket-server/docs/5.16.0/reference/javascript/JSON.html) for each event.
+The payload is stored in the request body as a JSON object. Each payload follows the schema specified in [Event Payload](https://confluence.atlassian.com/bitbucketserver0516/event-payload-966061436.html?utm_campaign=in-app-help&utm_medium=in-app-help&utm_source=stash#Eventpayload-repositoryevents) and [Bitbucket Entities](https://docs.atlassian.com/bitbucket-server/docs/5.16.0/reference/javascript/JSON.html).
 
 Here is an example payload for the event `pr:merged`:
 <img width="1266" alt="Screen Shot 2019-11-13 at 6 21 57 AM" src="https://user-images.githubusercontent.com/3507526/68772049-fc7a3480-05dd-11ea-9676-707b40fd3daf.png">
@@ -34,13 +33,23 @@ $ curl -X GET 'https://${BITBUCKET_SERVER_URL}/rest/sourcegraph-admin/1.0/webhoo
 There will be a 200 response code if successful.
 
 Output: JSON serialized `[]Webhook`  
-Ex: `[{"id":1,"name":"test","scope":"global","identifier":"","events":["pr"],"endpoint":"endpoint","secret":"secret"}]`
+```
+[{
+    "id": "1",
+    "name": "webhook",
+    "scope": "global",
+    "identifier": "",
+    "events": ["pr"],
+    "endpoint": "endpoint",
+    "secret": "secret"
+}]
+```
 
 #### Create
 ```
 curl -X POST 'https://${BITBUCKET_SERVER_URL}/rest/sourcegraph-admin/1.0/webhook' \
     -H 'Content-Type: application/json' \
-    -d '{"name":"", "scope":"", "identifier":"", "events":["", "", ...], "endpoint":"", "secret":""}'
+    -d '{"name":"", "scope":"", "identifier":"", "events":["pr:opened", "pr:merged", "pr:comment:added"], "endpoint":"", "secret":""}'
 ```
 There will be a 204 response code if successful.  
 
