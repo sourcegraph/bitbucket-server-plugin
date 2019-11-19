@@ -11,7 +11,7 @@ The Sourcegraph Bitbucket Server plugin provides an internal implementation for 
 ## Payload
 The event payload request is sent when an event is fired. There will be five attempts before the request fails. This will be recorded in the logs.
 
-The request has these headers:
+Each request has the following headers:
 - `X-Event-Key` - contains the specific event key
 - `X-Hook-ID` - webhook id
 - `X-Hook-Name` - webhook name
