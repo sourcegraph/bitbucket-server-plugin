@@ -20,7 +20,7 @@ Each request has the following headers:
 The payload is stored in the request body as a JSON object. They follow the schema specified in [Event Payload](https://confluence.atlassian.com/bitbucketserver0516/event-payload-966061436.html?utm_campaign=in-app-help&utm_medium=in-app-help&utm_source=stash#Eventpayload-repositoryevents) and
 [Bitbucket Entities](https://docs.atlassian.com/bitbucket-server/docs/5.16.0/reference/javascript/JSON.html) for each event.
 
-Example (`pr:merged`):
+Here is an example payload for the event `pr:merged`:
 <img width="1266" alt="Screen Shot 2019-11-13 at 6 21 57 AM" src="https://user-images.githubusercontent.com/3507526/68772049-fc7a3480-05dd-11ea-9676-707b40fd3daf.png">
 
 
