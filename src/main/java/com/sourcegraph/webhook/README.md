@@ -13,7 +13,7 @@ The event payload request is sent when an event is fired. There will be five att
 
 Each request has the following headers:
 - `X-Event-Key` - The name of the event
-- `X-Hook-ID` - webhook id
+- `X-Hook-ID` - The ID that represents the webhook
 - `X-Hook-Name` - webhook name
 - `X-Hub-Signature` - HMAC SHA256 hash of the payload (request body)
 
