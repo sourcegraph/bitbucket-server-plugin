@@ -1,5 +1,5 @@
 # Webhooks
-The Sourcegraph Bitbucket Server plugin provides an internal implementation for webhooks that supports listening to events at a global or project scope.
+The Sourcegraph Bitbucket Server plugin provides an implementation for webhooks that supports listening to events at a global or project scope.
 
 ## Contents
 - [Payload](#payload)
