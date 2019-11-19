@@ -40,7 +40,7 @@ Output: JSON serialized `[]Webhook`
     "scope": "global",
     "identifier": "",
     "events": ["pr"],
-    "endpoint": "endpoint",
+    "endpoint": "https://${SOURCEGRAPH_URL}/.api/bitbucketserver-webhooks",
     "secret": "secret"
 }]
 ```
