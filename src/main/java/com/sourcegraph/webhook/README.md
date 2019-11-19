@@ -14,7 +14,7 @@ The event payload request is sent when an event is fired. There will be five att
 Each request has the following headers:
 - `X-Event-Key` - The name of the event
 - `X-Hook-ID` - The ID that represents the webhook
-- `X-Hook-Name` - webhook name
+- `X-Hook-Name` - The name of the webhook that sends the request
 - `X-Hub-Signature` - HMAC SHA256 hash of the payload (request body)
 
 The payload is stored in the request body as a JSON object. They follow the schema specified in [Event Payload](https://confluence.atlassian.com/bitbucketserver0516/event-payload-966061436.html?utm_campaign=in-app-help&utm_medium=in-app-help&utm_source=stash#Eventpayload-repositoryevents) and
