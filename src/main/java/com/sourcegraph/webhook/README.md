@@ -9,7 +9,7 @@ The Sourcegraph Bitbucket Server plugin provides an internal implementation for 
     * [Delete](#delete)
 
 ## Payload
-The event payload request is sent when an event is fired. There will be five attempts before the request fails. This will be recorded in the logs.
+The event payload HTTP POST request is sent when an event is fired. In the case that the request fails, there will be four further attempts with an interval of 10 seconds before it stops trying. The outcomes of these requests are recorded in the logs.
 
 Each request has the following headers:
 - `X-Event-Key` - The name of the event
