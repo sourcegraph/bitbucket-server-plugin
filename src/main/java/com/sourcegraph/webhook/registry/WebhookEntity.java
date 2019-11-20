@@ -6,9 +6,7 @@ import net.java.ao.OneToMany;
 public interface WebhookEntity extends Entity {
     String getName();
 
-    String getScope();
-
-    int getIdentifier();
+    String getSelector();
 
     @OneToMany
     EventEntity[] getEvents();

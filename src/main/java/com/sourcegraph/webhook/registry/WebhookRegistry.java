@@ -12,6 +12,7 @@ import net.java.ao.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.lang.*;
 import javax.ws.rs.core.Response;
 import java.util.*;
 
@@ -67,20 +68,19 @@ public class WebhookRegistry {
                 events.add(ev.getEvent());
             }
 
-            String name = resolveName(ent.getScope(), ent.getIdentifier());
-            hooks.add(new Webhook(ent.getID(), ent.getName(), ent.getScope(), name, events, ent.getEndpoint(), ent.getSecret()));
+            String selector = resolveSelectorName(ent.getSelector());
+            hooks.add(new Webhook(ent.getID(), ent.getName(), selector, events, ent.getEndpoint(), ent.getSecret()));
         }
         return hooks;
     }
 
     public static void register(Webhook hook) throws WebhookException {
-        int identifier = resolveID(hook.scope, hook.identifier);
+        String selector = resolveSelectorID(hook.selector);
 
         activeObjects.executeInTransaction(() -> {
             Map<String, Object> params = new HashMap<>();
-            params.put("SCOPE", hook.scope);
             params.put("NAME", hook.name);
-            params.put("IDENTIFIER", identifier);
+            params.put("SELECTOR", selector);
             params.put("ENDPOINT", hook.endpoint);
             params.put("SECRET", hook.secret);
 
@@ -119,36 +119,52 @@ public class WebhookRegistry {
         });
     }
 
-    private static int resolveID(String scope, String name) throws WebhookException {
+    private static String resolveSelectorID(String selector) throws WebhookException {
+        if (selector.equals("global")) {
+            return selector;
+        }
+
+        String[] split = selector.split(":");
+        if (split.length < 2) {
+            throw new WebhookException(WebhookException.Status.UNPROCESSABLE_ENTITY, "Invalid selector: " + selector);
+        }
+
+        String scope = split[0];
+        String name = split[1];
         switch (scope) {
             case "repository":
-                String[] split = name.split("/");
-                Repository repository = repositories.getBySlug(split[0], split[1]);
+                String[] slug = name.split("/");
+                Repository repository = repositories.getBySlug(slug[0], slug[1]);
                 if (repository == null) {
                     throw new WebhookException(Response.Status.NOT_FOUND, "No such repository: " + name);
                 }
-                return repository.getId();
+                return scope + ":" + repository.getId();
             case "project":
                 Project project = projects.getByName(name);
                 if (project == null) {
                     throw new WebhookException(Response.Status.NOT_FOUND, "No such project: " + name);
                 }
-                return project.getId();
-            case "global":
-                return 0;
+                return scope + ":" + project.getId();
             default:
                 throw new WebhookException(WebhookException.Status.UNPROCESSABLE_ENTITY, "Invalid scope: " + scope);
         }
     }
 
-    private static String resolveName(String scope, int id) {
+    private static String resolveSelectorName(String selector) {
+        if (selector.equals("global")) {
+            return selector;
+        }
+
+        String[] split = selector.split(":");
+        String scope = split[0];
+        int id = Integer.parseInt(split[1]);
         switch (scope) {
             case "repository":
                 Repository repository = repositories.getById(id);
-                return repository == null ? "" : repository.getName();
+                return repository == null ? "" : scope + ":" + repository.getProject().getName() + "/" + repository.getName();
             case "project":
                 Project project = projects.getById(id);
-                return project == null ? "" : project.getName();
+                return project == null ? "" : scope + ":" + project.getName();
             default:
                 return "";
         }
