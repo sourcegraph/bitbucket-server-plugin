@@ -40,14 +40,15 @@ public class WebhookRegistry {
     public static List<Webhook> getWebhooks(List<String> keys, Repository repository) {
         String params = Joiner.on(", ").join(Collections.nCopies(keys.size(), "?"));
         Iterable<Object> args = Iterables.concat(keys, Arrays.asList(
-                repository.getId(),
-                repository.getProject().getId()
+                repository.getProject().getId(),
+                repository.getId()
         ));
 
         String where = "event.EVENT in (" + params + ") "
-                + "AND (webhook.SCOPE = \'global\' "
-                + "OR (webhook.SCOPE = \'project\' AND webhook.IDENTIFIER = ?) "
-                + "OR (webhook.SCOPE = \'repository\' AND webhook.IDENTIFIER = ?))";
+                + "AND (webhook.SELECTOR = \'global\' "
+                + "OR (webhook.SELECTOR = CONCAT(\'project\', ':',  ?)) "
+                + "OR (webhook.SELECTOR = CONCAT(\'repository\', ':', ?)))";
+        System.out.println(where);
 
         Query query = Query.select()
                 .alias(WebhookEntity.class, "webhook")
