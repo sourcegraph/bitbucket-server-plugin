@@ -120,6 +120,10 @@ public class WebhookRegistry {
     }
 
     private static String resolveSelectorID(String selector) throws WebhookException {
+        if (selector == null) {
+            throw new WebhookException(WebhookException.Status.UNPROCESSABLE_ENTITY, "Missing selector");
+        }
+
         if (selector.equals("global")) {
             return selector;
         }
