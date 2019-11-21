@@ -19,9 +19,46 @@ Each request has the following headers:
 
 The payload is sent in the request body as a JSON object. Each payload follows the schema specified in [Event Payload](https://confluence.atlassian.com/bitbucketserver0516/event-payload-966061436.html?utm_campaign=in-app-help&utm_medium=in-app-help&utm_source=stash#Eventpayload-repositoryevents) and [Bitbucket Entities](https://docs.atlassian.com/bitbucket-server/docs/5.16.0/reference/javascript/JSON.html).
 
-Here is an example payload for the event `pr:merged`:
-<img width="1266" alt="Screen Shot 2019-11-13 at 6 21 57 AM" src="https://user-images.githubusercontent.com/3507526/68772049-fc7a3480-05dd-11ea-9676-707b40fd3daf.png">
 
+Here is an example payload for the event `pr:opened`:
+```
+2019/11/20 22:31:54 POST / HTTP/1.1                             
+Host: localhost:4000                                            
+Accept-Encoding: gzip,deflate                                   
+Connection: Keep-Alive                                                                                                          
+Content-Length: 2820                                                                                                            
+Content-Type: text/plain; charset=UTF-8                                                                                         
+User-Agent: Apache-HttpClient/4.5.5 (Java/1.8.0_144)                                                                            
+X-Attempt-Number: 0                                             
+X-Event-Key: pr:opened                                          
+X-Hook-Id: 2                                                                                                                    
+X-Hook-Name: cool                                                                                                               
+X-Hub-Signature: c269feb28f9f317add3793f2b09e6125289ca12324dd45a85256e35dfaf5ee35                                               
+                                                                                                                                
+{"date":"2019-11-20T10:31:54-0800","actor":{"name":"admin","emailAddress":"admin@example.com","id":1,"displayName":"Administrato
+r","active":true,"slug":"admin","type":"NORMAL","links":{"self":[{"href":"http://localhost:7990/bitbucket/users/admin"}]},"avata
+rUrl":"https://secure.gravatar.com/avatar/e64c7d89f26bd1972efa854d13d7dd61.jpg?s\u003d64\u0026d\u003dmm"},"pullRequest":{"id":2,
+"version":0,"title":"add_file.txt edited online with Bitbucket","description":"a","state":"OPEN","open":true,"closed":false,"cre
+atedDate":1574317913743,"updatedDate":1574317913743,"fromRef":{"id":"refs/heads/admin/add_filetxt-1574317875130","displayId":"ad
+min/add_filetxt-1574317875130","latestCommit":"2b9cff39d08fad011ab3607836988760b30f66e1","repository":{"slug":"rep_1","id":1,"na
+me":"rep_1","scmId":"git","state":"AVAILABLE","statusMessage":"Available","forkable":true,"project":{"key":"PROJECT_1","id":1,"n
+ame":"Project 1","description":"Default configuration project #1","public":false,"type":"NORMAL","links":{"self":[{"href":"http:
+//localhost:7990/bitbucket/projects/PROJECT_1"}]},"avatarUrl":"/bitbucket/projects/PROJECT_1/avatar.png?s\u003d64\u0026v\u003d15
+42341450256"},"public":false,"links":{"clone":[{"href":"http://localhost:7990/bitbucket/scm/project_1/rep_1.git","name":"http"},
+{"href":"ssh://git@localhost:7999/project_1/rep_1.git","name":"ssh"}],"self":[{"href":"http://localhost:7990/bitbucket/projects/
+PROJECT_1/repos/rep_1/browse"}]}}},"toRef":{"id":"refs/heads/master","displayId":"master","latestCommit":"0a943a29376f2336b78312
+d99e65da17048951db","repository":{"slug":"rep_1","id":1,"name":"rep_1","scmId":"git","state":"AVAILABLE","statusMessage":"Availa
+ble","forkable":true,"project":{"key":"PROJECT_1","id":1,"name":"Project 1","description":"Default configuration project #1","pu
+blic":false,"type":"NORMAL","links":{"self":[{"href":"http://localhost:7990/bitbucket/projects/PROJECT_1"}]},"avatarUrl":"/bitbu
+cket/projects/PROJECT_1/avatar.png?s\u003d64\u0026v\u003d1542341450256"},"public":false,"links":{"clone":[{"href":"http://localh
+ost:7990/bitbucket/scm/project_1/rep_1.git","name":"http"},{"href":"ssh://git@localhost:7999/project_1/rep_1.git","name":"ssh"}]
+,"self":[{"href":"http://localhost:7990/bitbucket/projects/PROJECT_1/repos/rep_1/browse"}]}}},"locked":false,"author":{"user":{"
+name":"admin","emailAddress":"admin@example.com","id":1,"displayName":"Administrator","active":true,"slug":"admin","type":"NORMA
+L","links":{"self":[{"href":"http://localhost:7990/bitbucket/users/admin"}]},"avatarUrl":"https://secure.gravatar.com/avatar/e64
+c7d89f26bd1972efa854d13d7dd61.jpg?s\u003d64\u0026d\u003dmm"},"role":"AUTHOR","approved":false,"status":"UNAPPROVED"},"reviewers"
+:[],"participants":[],"links":{"self":[{"href":"http://localhost:7990/bitbucket/projects/PROJECT_1/repos/rep_1/pull-requests/2"}
+]}}}
+```
 
 ## REST API
 Interacting with the webhook REST endpoints requires [authentication](https://developer.atlassian.com/server/bitbucket/how-tos/example-basic-authentication/) from a system admin account.
