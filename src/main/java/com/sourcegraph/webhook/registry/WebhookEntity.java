@@ -8,8 +8,6 @@ public interface WebhookEntity extends Entity {
 
     String getScope();
 
-    int getIdentifier();
-
     @OneToMany
     EventEntity[] getEvents();
 

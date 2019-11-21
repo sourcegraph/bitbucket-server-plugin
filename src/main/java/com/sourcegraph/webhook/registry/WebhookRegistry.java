@@ -12,6 +12,7 @@ import net.java.ao.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.lang.*;
 import javax.ws.rs.core.Response;
 import java.util.*;
 
@@ -39,14 +40,14 @@ public class WebhookRegistry {
     public static List<Webhook> getWebhooks(List<String> keys, Repository repository) {
         String params = Joiner.on(", ").join(Collections.nCopies(keys.size(), "?"));
         Iterable<Object> args = Iterables.concat(keys, Arrays.asList(
-                repository.getId(),
-                repository.getProject().getId()
+                repository.getProject().getId(),
+                repository.getId()
         ));
 
         String where = "event.EVENT in (" + params + ") "
                 + "AND (webhook.SCOPE = \'global\' "
-                + "OR (webhook.SCOPE = \'project\' AND webhook.IDENTIFIER = ?) "
-                + "OR (webhook.SCOPE = \'repository\' AND webhook.IDENTIFIER = ?))";
+                + "OR (webhook.SCOPE = CONCAT(\'project\', ':',  ?)) "
+                + "OR (webhook.SCOPE = CONCAT(\'repository\', ':', ?)))";
 
         Query query = Query.select()
                 .alias(WebhookEntity.class, "webhook")
@@ -67,20 +68,19 @@ public class WebhookRegistry {
                 events.add(ev.getEvent());
             }
 
-            String name = resolveName(ent.getScope(), ent.getIdentifier());
-            hooks.add(new Webhook(ent.getID(), ent.getName(), ent.getScope(), name, events, ent.getEndpoint(), ent.getSecret()));
+            String selector = resolveScopeName(ent.getScope());
+            hooks.add(new Webhook(ent.getID(), ent.getName(), selector, events, ent.getEndpoint(), ent.getSecret()));
         }
         return hooks;
     }
 
     public static void register(Webhook hook) throws WebhookException {
-        int identifier = resolveID(hook.scope, hook.identifier);
+        String scope = resolveScopeID(hook.scope);
 
         activeObjects.executeInTransaction(() -> {
             Map<String, Object> params = new HashMap<>();
-            params.put("SCOPE", hook.scope);
             params.put("NAME", hook.name);
-            params.put("IDENTIFIER", identifier);
+            params.put("SCOPE", scope);
             params.put("ENDPOINT", hook.endpoint);
             params.put("SECRET", hook.secret);
 
@@ -119,36 +119,56 @@ public class WebhookRegistry {
         });
     }
 
-    private static int resolveID(String scope, String name) throws WebhookException {
-        switch (scope) {
+    private static String resolveScopeID(String scope) throws WebhookException {
+        if (scope == null) {
+            throw new WebhookException(WebhookException.Status.UNPROCESSABLE_ENTITY, "Missing scope");
+        }
+
+        if (scope.equals("global")) {
+            return scope;
+        }
+
+        String[] split = scope.split(":");
+        if (split.length < 2) {
+            throw new WebhookException(WebhookException.Status.UNPROCESSABLE_ENTITY, "Invalid scope: " + scope);
+        }
+
+        String selector = split[0];
+        String name = split[1];
+        switch (selector) {
             case "repository":
-                String[] split = name.split("/");
-                Repository repository = repositories.getBySlug(split[0], split[1]);
+                String[] slug = name.split("/");
+                Repository repository = repositories.getBySlug(slug[0], slug[1]);
                 if (repository == null) {
                     throw new WebhookException(Response.Status.NOT_FOUND, "No such repository: " + name);
                 }
-                return repository.getId();
+                return selector + ":" + repository.getId();
             case "project":
                 Project project = projects.getByName(name);
                 if (project == null) {
                     throw new WebhookException(Response.Status.NOT_FOUND, "No such project: " + name);
                 }
-                return project.getId();
-            case "global":
-                return 0;
+                return selector + ":" + project.getId();
             default:
                 throw new WebhookException(WebhookException.Status.UNPROCESSABLE_ENTITY, "Invalid scope: " + scope);
         }
     }
 
-    private static String resolveName(String scope, int id) {
-        switch (scope) {
+    private static String resolveScopeName(String scope) {
+        if (scope.equals("global")) {
+            return scope;
+        }
+
+        String[] split = scope.split(":");
+        String selector = split[0];
+        int id = Integer.parseInt(split[1]);
+        switch (selector) {
             case "repository":
                 Repository repository = repositories.getById(id);
-                return repository == null ? "" : repository.getName();
+                return repository == null ? "" : selector + ":" + repository.getProject().getName() + "/" + repository.getName();
             case "project":
                 Project project = projects.getById(id);
-                return project == null ? "" : project.getName();
+                return project == null ? "" : selector + ":" + project.getName();
             default:
                 return "";
         }
