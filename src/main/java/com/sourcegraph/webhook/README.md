@@ -61,7 +61,7 @@ c7d89f26bd1972efa854d13d7dd61.jpg?s\u003d64\u0026d\u003dmm"},"role":"AUTHOR","ap
 ```
 
 ## REST API
-Interacting with the webhook REST endpoints requires [authentication](https://developer.atlassian.com/server/bitbucket/how-tos/example-basic-authentication/) from a system admin account.
+Interacting with the webhook REST endpoints requires [authentication](https://developer.atlassian.com/server/bitbucket/how-tos/example-basic-authentication/) from a system admin account. Otherwise, requests will result in `401`s.
 
 #### List
 ```
@@ -92,11 +92,14 @@ There will be a 204 response code if successful.
 
 **JSON Fields:**
 * name - string id for webhook
-* scope - can be either `global`, `project`, or `repository`
-* identifier - empty (`""`) if scope is global, otherwise, name of `project` or `repository`
+* scope - can be either `global`, `project:<project name>`, or `repository:<project key>/<repository name>`
 * events - list of events; events can be: `pr`, `pr:opened`, `pr:modified`, `pr:reviewer`, `pr:reviewer:updated`, `pr:reviewer:approved`, `pr:reviewer:unapproved`, `pr:reviewer:needs_work`, `pr:merged`, `pr:declined`, `pr:deleted`, `pr:comment`, `pr:comment:added`, `pr:comment:edited`, `pr:comment:deleted`
 * endpoint - url that the event payload will be sent to
 * secret - key to sign payload request with
+
+Error codes:  
+`404` - No such project or repository  
+`422` - Invalid scope
 
 NOTE: More events can be added in the future. These are just the currently supported ones.
 
