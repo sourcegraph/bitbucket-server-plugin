@@ -10,7 +10,7 @@ public class Webhook {
     @Expose
     public String name;
     @Expose
-    public String selector;
+    public String scope;
     @Expose
     public Set<String> events;
     @Expose
@@ -18,10 +18,10 @@ public class Webhook {
     @Expose(serialize = false)
     public String secret;
 
-    public Webhook(int id, String name, String selector, Set<String> events, String endpoint, String secret) {
+    public Webhook(int id, String name, String scope, Set<String> events, String endpoint, String secret) {
         this.id = id;
         this.name = name;
-        this.selector = selector;
+        this.scope = scope;
         this.events = events;
         this.endpoint = endpoint;
         this.secret = secret;

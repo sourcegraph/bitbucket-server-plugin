@@ -45,10 +45,9 @@ public class WebhookRegistry {
         ));
 
         String where = "event.EVENT in (" + params + ") "
-                + "AND (webhook.SELECTOR = \'global\' "
-                + "OR (webhook.SELECTOR = CONCAT(\'project\', ':',  ?)) "
-                + "OR (webhook.SELECTOR = CONCAT(\'repository\', ':', ?)))";
-        System.out.println(where);
+                + "AND (webhook.SCOPE = \'global\' "
+                + "OR (webhook.SCOPE = CONCAT(\'project\', ':',  ?)) "
+                + "OR (webhook.SCOPE = CONCAT(\'repository\', ':', ?)))";
 
         Query query = Query.select()
                 .alias(WebhookEntity.class, "webhook")
@@ -69,19 +68,19 @@ public class WebhookRegistry {
                 events.add(ev.getEvent());
             }
 
-            String selector = resolveSelectorName(ent.getSelector());
+            String selector = resolveScopeName(ent.getScope());
             hooks.add(new Webhook(ent.getID(), ent.getName(), selector, events, ent.getEndpoint(), ent.getSecret()));
         }
         return hooks;
     }
 
     public static void register(Webhook hook) throws WebhookException {
-        String selector = resolveSelectorID(hook.selector);
+        String scope = resolveScopeID(hook.scope);
 
         activeObjects.executeInTransaction(() -> {
             Map<String, Object> params = new HashMap<>();
             params.put("NAME", hook.name);
-            params.put("SELECTOR", selector);
+            params.put("SCOPE", scope);
             params.put("ENDPOINT", hook.endpoint);
             params.put("SECRET", hook.secret);
 
@@ -120,56 +119,56 @@ public class WebhookRegistry {
         });
     }
 
-    private static String resolveSelectorID(String selector) throws WebhookException {
-        if (selector == null) {
-            throw new WebhookException(WebhookException.Status.UNPROCESSABLE_ENTITY, "Missing selector");
+    private static String resolveScopeID(String scope) throws WebhookException {
+        if (scope == null) {
+            throw new WebhookException(WebhookException.Status.UNPROCESSABLE_ENTITY, "Missing scope");
         }
 
-        if (selector.equals("global")) {
-            return selector;
+        if (scope.equals("global")) {
+            return scope;
         }
 
-        String[] split = selector.split(":");
+        String[] split = scope.split(":");
         if (split.length < 2) {
-            throw new WebhookException(WebhookException.Status.UNPROCESSABLE_ENTITY, "Invalid selector: " + selector);
+            throw new WebhookException(WebhookException.Status.UNPROCESSABLE_ENTITY, "Invalid scope: " + scope);
         }
 
-        String scope = split[0];
+        String selector = split[0];
         String name = split[1];
-        switch (scope) {
+        switch (selector) {
             case "repository":
                 String[] slug = name.split("/");
                 Repository repository = repositories.getBySlug(slug[0], slug[1]);
                 if (repository == null) {
                     throw new WebhookException(Response.Status.NOT_FOUND, "No such repository: " + name);
                 }
-                return scope + ":" + repository.getId();
+                return selector + ":" + repository.getId();
             case "project":
                 Project project = projects.getByName(name);
                 if (project == null) {
                     throw new WebhookException(Response.Status.NOT_FOUND, "No such project: " + name);
                 }
-                return scope + ":" + project.getId();
+                return selector + ":" + project.getId();
             default:
                 throw new WebhookException(WebhookException.Status.UNPROCESSABLE_ENTITY, "Invalid scope: " + scope);
         }
     }
 
-    private static String resolveSelectorName(String selector) {
-        if (selector.equals("global")) {
-            return selector;
+    private static String resolveScopeName(String scope) {
+        if (scope.equals("global")) {
+            return scope;
         }
 
-        String[] split = selector.split(":");
-        String scope = split[0];
+        String[] split = scope.split(":");
+        String selector = split[0];
         int id = Integer.parseInt(split[1]);
-        switch (scope) {
+        switch (selector) {
             case "repository":
                 Repository repository = repositories.getById(id);
-                return repository == null ? "" : scope + ":" + repository.getProject().getName() + "/" + repository.getName();
+                return repository == null ? "" : selector + ":" + repository.getProject().getName() + "/" + repository.getName();
             case "project":
                 Project project = projects.getById(id);
-                return project == null ? "" : scope + ":" + project.getName();
+                return project == null ? "" : selector + ":" + project.getName();
             default:
                 return "";
         }
