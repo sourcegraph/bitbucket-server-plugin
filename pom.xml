@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.sourcegraph.plugins</groupId>
@@ -8,7 +9,9 @@
     <packaging>atlassian-plugin</packaging>
 
     <name>Sourcegraph for Bitbucket Server</name>
-    <description>The Sourcegraph plugin for Bitbucket Server communicates with your Sourcegraph instance to add code intelligence to your Bitbucket Server code views and pull requests.</description>
+    <description>The Sourcegraph plugin for Bitbucket Server communicates with your Sourcegraph instance to add code
+        intelligence to your Bitbucket Server code views and pull requests.
+    </description>
 
     <organization>
         <name>Sourcegraph</name>
@@ -46,6 +49,11 @@
     </dependencyManagement>
 
     <dependencies>
+        <dependency>
+            <groupId>org.roaringbitmap</groupId>
+            <artifactId>RoaringBitmap</artifactId>
+            <version>0.8.11</version>
+        </dependency>
         <dependency>
             <groupId>javax.inject</groupId>
             <artifactId>javax.inject</artifactId>
