@@ -78,7 +78,7 @@ public class Dispatcher implements Runnable {
         try {
             Response response = (Response) request.executeAndReturn((resp) -> resp);
             if (response.isSuccessful()) {
-                log.debug("Dispatching webhook (" + serializer.getName() + ") data to URL: [" + hook.endpoint + "] succeeded.");
+                log.debug("Successfully dispatched webhook (" + serializer.getName() + ") data to URL: [" + hook.endpoint + "].");
                 return;
             }
         } catch (ResponseException e) {
