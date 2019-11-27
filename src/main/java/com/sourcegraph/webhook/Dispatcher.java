@@ -87,7 +87,7 @@ public class Dispatcher implements Runnable {
         attempt++;
 
         if (attempt == MAX_ATTEMPTS) {
-            log.warn("Exceeded maximum (" + MAX_ATTEMPTS + ") attempts trying to dispatch webhook data (" + serializer.getName() + ") to URL: [" + hook.endpoint + "]");
+            log.warn("Exceeded maximum (" + MAX_ATTEMPTS + ") attempts to dispatch webhook data (" + serializer.getName() + ") to URL: [" + hook.endpoint + "]");
             return;
         }
 
