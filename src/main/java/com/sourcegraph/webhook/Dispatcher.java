@@ -82,12 +82,12 @@ public class Dispatcher implements Runnable {
                 return;
             }
         } catch (ResponseException e) {
-            log.debug("Dispatching webhook data (" + serializer.getName() + ") to URL: [" + hook.endpoint + "] failed with error:\n" + e);
+            log.debug("Failed to dispatch webhook data (" + serializer.getName() + ") to URL: [" + hook.endpoint + "]:\n" + e);
         }
         attempt++;
 
         if (attempt == MAX_ATTEMPTS) {
-            log.warn("Dispatching webhook data (" + serializer.getName() + ") to URL: [" + hook.endpoint + "] failed after " + attempt + " attempts..");
+            log.warn("Exceeded maximum (" + MAX_ATTEMPTS + ") attempts trying to dispatch webhook data (" + serializer.getName() + ") to URL: [" + hook.endpoint + "]");
             return;
         }
 
