@@ -8,6 +8,7 @@ import com.atlassian.bitbucket.repository.RepositoryService;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Iterables;
+import com.sourcegraph.rest.Status;
 import net.java.ao.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -121,7 +122,7 @@ public class WebhookRegistry {
 
     private static String resolveScopeID(String scope) throws WebhookException {
         if (scope == null) {
-            throw new WebhookException(WebhookException.Status.UNPROCESSABLE_ENTITY, "Missing scope");
+            throw new WebhookException(Status.UNPROCESSABLE_ENTITY, "Missing scope");
         }
 
         if (scope.equals("global")) {
@@ -130,7 +131,7 @@ public class WebhookRegistry {
 
         String[] split = scope.split(":");
         if (split.length < 2) {
-            throw new WebhookException(WebhookException.Status.UNPROCESSABLE_ENTITY, "Invalid scope: " + scope);
+            throw new WebhookException(Status.UNPROCESSABLE_ENTITY, "Invalid scope: " + scope);
         }
 
         String selector = split[0];
@@ -150,7 +151,7 @@ public class WebhookRegistry {
                 }
                 return selector + ":" + project.getId();
             default:
-                throw new WebhookException(WebhookException.Status.UNPROCESSABLE_ENTITY, "Invalid scope: " + scope);
+                throw new WebhookException(Status.UNPROCESSABLE_ENTITY, "Invalid scope: " + scope);
         }
     }
 

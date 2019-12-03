@@ -25,11 +25,11 @@ import java.util.List;
 @Component
 public class WebhookRouter {
     private static final Logger log = LoggerFactory.getLogger(WebhookRouter.class);
-    private final UserManager userManager;
+    private static UserManager userManager;
 
     @Autowired
     public WebhookRouter(@ComponentImport UserManager userManager) {
-        this.userManager = userManager;
+        WebhookRouter.userManager = userManager;
     }
 
     private void authorize(HttpServletRequest request) throws WebhookException {

@@ -23,7 +23,6 @@ import java.net.URI;
 
 @Component("adminServlet")
 public class AdminServlet extends HttpServlet {
-
     private final TemplateRenderer templateRenderer;
     private final UserManager userManager;
     private final LoginUriProvider loginUriProvider;
