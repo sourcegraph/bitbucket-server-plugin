@@ -2,10 +2,10 @@ package com.sourcegraph.permission;
 
 import com.atlassian.bitbucket.permission.Permission;
 import com.atlassian.bitbucket.permission.PermissionService;
+import com.atlassian.bitbucket.permission.PermittedGroup;
 import com.atlassian.bitbucket.repository.Repository;
 import com.atlassian.bitbucket.repository.RepositoryService;
-import com.atlassian.bitbucket.user.DetailedUser;
-import com.atlassian.bitbucket.user.UserAdminService;
+import com.atlassian.bitbucket.user.*;
 import com.atlassian.bitbucket.util.Page;
 import com.atlassian.bitbucket.util.PageRequest;
 import com.atlassian.bitbucket.util.PageRequestImpl;
@@ -19,17 +19,12 @@ import org.springframework.stereotype.Component;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.ByteBuffer;
-import java.util.Arrays;
 
 @Path("/permissions")
 @Component
@@ -42,12 +37,15 @@ public class PermissionRouter {
     private static UserManager userManager;
     @ComponentImport
     private static PermissionService permissionService;
+    @ComponentImport
+    private static UserService userService;
 
-    public PermissionRouter(UserAdminService users, RepositoryService repositoryService, UserManager userManager, PermissionService permissionService) {
+    public PermissionRouter(UserAdminService users, RepositoryService repositoryService, UserManager userManager, PermissionService permissionService, UserService userService) {
         PermissionRouter.userAdminService = users;
         PermissionRouter.repositoryService = repositoryService;
         PermissionRouter.userManager = userManager;
         PermissionRouter.permissionService = permissionService;
+        PermissionRouter.userService = userService;
     }
 
     @GET
@@ -76,13 +74,18 @@ public class PermissionRouter {
         }
 
         RoaringBitmap bitmap = new RoaringBitmap();
+
+        UserSearchRequest.Builder builder = new UserSearchRequest.Builder();
+        builder.repositoryPermission(repo, perm);
+        UserSearchRequest search = builder.build();
+
         PageRequest pageRequest = new PageRequestImpl(0, 100);
         do {
-            Page<DetailedUser> page = userAdminService.findUsers(pageRequest);
-            for (DetailedUser user : page.getValues()) {
-                if (permissionService.hasRepositoryPermission(user, repo, perm)) {
-                    bitmap.flip(user.getId());
-                }
+            Page<ApplicationUser> page = userService.search(search, pageRequest);
+            System.out.println(page.getSize());
+            for (ApplicationUser user : page.getValues()) {
+                System.out.println(user.getDisplayName());
+                bitmap.flip(user.getId());
             }
             pageRequest = page.getNextPageRequest();
         } while (pageRequest != null);
