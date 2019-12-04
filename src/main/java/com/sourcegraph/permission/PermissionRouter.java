@@ -53,26 +53,26 @@ public class PermissionRouter {
     // Ex. /permissions/users?repository=PROJECT_1/rep_1&permission=read
     @GET
     @Path("/users")
-    public Response getUsersWithRepositoryPermission(@Context HttpServletRequest request, @QueryParam("repository") String repository, @QueryParam("permission") String permission) throws IOException {
+    public Response getUsersWithRepositoryPermission(@Context HttpServletRequest request, @QueryParam("repository") String repo, @QueryParam("permission") String perm) throws IOException {
         UserProfile profile = userManager.getRemoteUser(request);
         if (profile == null || !userManager.isSystemAdmin(profile.getUserKey())) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
-        Repository repo = getRepository(repository);
-        if (repo == null) {
+        Repository repository = getRepository(repo);
+        if (repository == null) {
             return Response.status(Response.Status.NOT_FOUND).entity("No such repository: " + repository).build();
         }
 
-        Permission perm = getRepositoryPermission(permission);
-        if (perm == null) {
+        Permission permission = getRepositoryPermission(perm);
+        if (permission == null) {
             return Response.status(Status.UNPROCESSABLE_ENTITY).build();
         }
 
         RoaringBitmap bitmap = new RoaringBitmap();
 
         UserSearchRequest.Builder builder = new UserSearchRequest.Builder();
-        builder.repositoryPermission(repo, perm);
+        builder.repositoryPermission(repository, permission);
         UserSearchRequest search = builder.build();
 
         PageRequest pageRequest = new PageRequestImpl(0, 100);
@@ -84,13 +84,8 @@ public class PermissionRouter {
             pageRequest = page.getNextPageRequest();
         } while (pageRequest != null);
 
-        byte[] backing;
-        try {
-            backing = serialize(bitmap);
-        } catch (IOException ex) {
-            return Response.serverError().build();
-        }
-        return Response.ok(backing).build();
+        byte[] backing = serialize(bitmap);
+        return backing != null ? Response.ok(backing).build() : Response.serverError().build();
     }
 
     // The getAccessibleRepositories endpoint returns a roaring bitmap containing the IDs of all the repositories
@@ -99,7 +94,7 @@ public class PermissionRouter {
     // Ex. /permissions/repositories?user=user&permission=admin
     @GET
     @Path("/repositories")
-    public Response getAccessibleRepositories(@Context HttpServletRequest request, @QueryParam("user") String name, @QueryParam("permission") String permission) {
+    public Response getAccessibleRepositories(@Context HttpServletRequest request, @QueryParam("user") String name, @QueryParam("permission") String perm) {
         UserProfile profile = userManager.getRemoteUser(request);
         if (profile == null || !userManager.isSystemAdmin(profile.getUserKey())) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
@@ -110,8 +105,8 @@ public class PermissionRouter {
             return Response.status(Response.Status.NOT_FOUND).entity("No such user: " + user).build();
         }
 
-        Permission perm = getRepositoryPermission(permission);
-        if (perm == null) {
+        Permission permission = getRepositoryPermission(perm);
+        if (permission == null) {
             return Response.status(Status.UNPROCESSABLE_ENTITY).build();
         }
 
@@ -120,7 +115,7 @@ public class PermissionRouter {
             RoaringBitmap temp = new RoaringBitmap();
 
             RepositorySearchRequest.Builder builder = new RepositorySearchRequest.Builder();
-            builder.permission(perm);
+            builder.permission(permission);
             RepositorySearchRequest search = builder.build();
 
             PageRequest pageRequest = new PageRequestImpl(0, 100);
@@ -134,20 +129,19 @@ public class PermissionRouter {
             return temp;
         });
 
-        byte[] backing;
-        try {
-            backing = serialize(bitmap);
-        } catch (IOException ex) {
-            return Response.serverError().build();
-        }
-        return Response.ok(backing).build();
+        byte[] backing = serialize(bitmap);
+        return backing != null ? Response.ok(backing).build() : Response.serverError().build();
     }
 
-    public byte[] serialize(RoaringBitmap bitmap) throws IOException {
+    public byte[] serialize(RoaringBitmap bitmap) {
         ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
         DataOutputStream out = new DataOutputStream(byteOut);
-        bitmap.serialize(out);
-        return byteOut.toByteArray();
+        try {
+            bitmap.serialize(out);
+            return byteOut.toByteArray();
+        } catch (IOException e) {
+            return null;
+        }
     }
 
     public Repository getRepository(String name) {
@@ -156,11 +150,10 @@ public class PermissionRouter {
     }
 
     public Permission getRepositoryPermission(String permission) {
-        Permission perm = null;
         try {
-            perm = Permission.valueOf("REPO_" + permission.toUpperCase());
+            return Permission.valueOf("REPO_" + permission.toUpperCase());
         } catch (IllegalArgumentException ignored) {
+            return null;
         }
-        return perm;
     }
 }
