@@ -75,7 +75,7 @@ public class PermissionRouter {
         builder.repositoryPermission(repository, permission);
         UserSearchRequest search = builder.build();
 
-        PageRequest pageRequest = new PageRequestImpl(0, 100);
+        PageRequest pageRequest = new PageRequestImpl(0, 5000);
         do {
             Page<ApplicationUser> page = userService.search(search, pageRequest);
             for (ApplicationUser user : page.getValues()) {
@@ -118,7 +118,7 @@ public class PermissionRouter {
             builder.permission(permission);
             RepositorySearchRequest search = builder.build();
 
-            PageRequest pageRequest = new PageRequestImpl(0, 100);
+            PageRequest pageRequest = new PageRequestImpl(0, 5000);
             do {
                 Page<Repository> page = repositoryService.search(search, pageRequest);
                 for (Repository repository : page.getValues()) {
