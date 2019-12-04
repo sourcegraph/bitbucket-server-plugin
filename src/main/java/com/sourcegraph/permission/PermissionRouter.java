@@ -14,6 +14,7 @@ import com.atlassian.sal.api.user.UserManager;
 import com.atlassian.sal.api.user.UserProfile;
 import com.sourcegraph.rest.Status;
 import org.roaringbitmap.RoaringBitmap;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
@@ -38,6 +39,7 @@ public class PermissionRouter {
     @ComponentImport
     private static SecurityService securityService;
 
+    @Autowired
     public PermissionRouter(RepositoryService repositoryService, UserManager userManager, UserService userService, SecurityService securityService) {
         PermissionRouter.repositoryService = repositoryService;
         PermissionRouter.userManager = userManager;
@@ -45,6 +47,10 @@ public class PermissionRouter {
         PermissionRouter.securityService = securityService;
     }
 
+    // The getUsersWithRepositoryPermission endpoint returns a roaring bitmap containing the IDs of all the users
+    // that is granted the specified permission to the specified repository.
+    //
+    // Ex. /permissions/users?repository=PROJECT_1/rep_1&permission=read
     @GET
     @Path("/users")
     public Response getUsersWithRepositoryPermission(@Context HttpServletRequest request, @QueryParam("repository") String repository, @QueryParam("permission") String permission) throws IOException {
@@ -87,6 +93,10 @@ public class PermissionRouter {
         return Response.ok(backing).build();
     }
 
+    // The getAccessibleRepositories endpoint returns a roaring bitmap containing the IDs of all the repositories
+    // that a user is granted the specified permission for.
+    //
+    // Ex. /permissions/repositories?user=user&permission=admin
     @GET
     @Path("/repositories")
     public Response getAccessibleRepositories(@Context HttpServletRequest request, @QueryParam("user") String name, @QueryParam("permission") String permission) {
