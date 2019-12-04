@@ -72,9 +72,7 @@ public class PermissionRouter {
         PageRequest pageRequest = new PageRequestImpl(0, 100);
         do {
             Page<ApplicationUser> page = userService.search(search, pageRequest);
-            System.out.println(page.getSize());
             for (ApplicationUser user : page.getValues()) {
-                System.out.println(user.getDisplayName());
                 bitmap.add(user.getId());
             }
             pageRequest = page.getNextPageRequest();
