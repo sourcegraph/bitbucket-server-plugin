@@ -1,7 +1,6 @@
 package com.sourcegraph.permission;
 
 import com.atlassian.bitbucket.permission.Permission;
-import com.atlassian.bitbucket.permission.PermissionService;
 import com.atlassian.bitbucket.repository.Repository;
 import com.atlassian.bitbucket.repository.RepositorySearchRequest;
 import com.atlassian.bitbucket.repository.RepositoryService;
@@ -61,7 +60,7 @@ public class PermissionRouter {
 
         Repository repository = getRepository(repo);
         if (repository == null) {
-            return Response.status(Response.Status.NOT_FOUND).entity("No such repository: " + repository).build();
+            return Response.status(Response.Status.NOT_FOUND).entity("No such repository: " + repo).build();
         }
 
         Permission permission = getRepositoryPermission(perm);
@@ -85,7 +84,9 @@ public class PermissionRouter {
         } while (pageRequest != null);
 
         byte[] backing = serialize(bitmap);
-        return backing != null ? Response.ok(backing).build() : Response.serverError().build();
+        return backing != null ?
+                Response.ok(backing).header("X-Debug-Count", bitmap.getCardinality()).build() :
+                Response.serverError().build();
     }
 
     // The getAccessibleRepositories endpoint returns a roaring bitmap containing the IDs of all the repositories
@@ -102,7 +103,7 @@ public class PermissionRouter {
 
         ApplicationUser user = userService.getUserByName(name);
         if (user == null) {
-            return Response.status(Response.Status.NOT_FOUND).entity("No such user: " + user).build();
+            return Response.status(Response.Status.NOT_FOUND).entity("No such user: " + name).build();
         }
 
         Permission permission = getRepositoryPermission(perm);
@@ -130,7 +131,9 @@ public class PermissionRouter {
         });
 
         byte[] backing = serialize(bitmap);
-        return backing != null ? Response.ok(backing).build() : Response.serverError().build();
+        return backing != null ?
+                Response.ok(backing).header("X-Debug-Count", bitmap.getCardinality()).build() :
+                Response.serverError().build();
     }
 
     public byte[] serialize(RoaringBitmap bitmap) {
