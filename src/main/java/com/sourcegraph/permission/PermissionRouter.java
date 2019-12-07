@@ -46,10 +46,12 @@ public class PermissionRouter {
         PermissionRouter.securityService = securityService;
     }
 
-    // The getUsersWithRepositoryPermission endpoint returns a roaring bitmap containing the IDs of all the users
-    // that is granted the specified permission to the specified repository.
-    //
-    // Ex. /permissions/users?repository=PROJECT_1/rep_1&permission=read
+    /**
+     * The getUsersWithRepositoryPermission endpoint returns a roaring bitmap containing the IDs of all the users
+     * that is granted the specified permission to the specified repository.
+     *
+     * Ex. /permissions/users?repository=PROJECT_1/rep_1&permission=read
+     */
     @GET
     @Path("/users")
     public Response getUsersWithRepositoryPermission(@Context HttpServletRequest request, @QueryParam("repository") String repo, @QueryParam("permission") String perm) throws IOException {
@@ -89,10 +91,12 @@ public class PermissionRouter {
                 Response.serverError().build();
     }
 
-    // The getAccessibleRepositories endpoint returns a roaring bitmap containing the IDs of all the repositories
-    // that a user is granted the specified permission for.
-    //
-    // Ex. /permissions/repositories?user=user&permission=admin
+    /**
+     * The getAccessibleRepositories endpoint returns a roaring bitmap containing the IDs of all the repositories
+     * that a user is granted the specified permission for.
+     *
+     * Ex. /permissions/repositories?user=user&permission=admin
+     */
     @GET
     @Path("/repositories")
     public Response getAccessibleRepositories(@Context HttpServletRequest request, @QueryParam("user") String name, @QueryParam("permission") String perm) {
