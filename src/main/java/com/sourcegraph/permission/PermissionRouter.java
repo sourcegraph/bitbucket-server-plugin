@@ -19,6 +19,7 @@ import org.springframework.stereotype.Component;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
@@ -49,7 +50,7 @@ public class PermissionRouter {
     /**
      * The getUsersWithRepositoryPermission endpoint returns a roaring bitmap containing the IDs of all the users
      * that is granted the specified permission to the specified repository.
-     *
+     * <p>
      * Ex. /permissions/users?repository=PROJECT_1/rep_1&permission=read
      */
     @GET
@@ -67,7 +68,8 @@ public class PermissionRouter {
 
         Permission permission = getRepositoryPermission(perm);
         if (permission == null) {
-            return Response.status(Status.UNPROCESSABLE_ENTITY).build();
+            return Response.status(Status.UNPROCESSABLE_ENTITY)
+                    .entity("Invalid permission: " + perm + " | Available options: admin, read, write").build();
         }
 
         RoaringBitmap bitmap = new RoaringBitmap();
@@ -87,14 +89,15 @@ public class PermissionRouter {
 
         byte[] backing = serialize(bitmap);
         return backing != null ?
-                Response.ok(backing).header("X-Debug-Count", bitmap.getCardinality()).build() :
+                Response.ok(backing).header("X-Debug-Count", bitmap.getCardinality())
+                        .entity("Failed roaring bitmap serialization").build() :
                 Response.serverError().build();
     }
 
     /**
      * The getAccessibleRepositories endpoint returns a roaring bitmap containing the IDs of all the repositories
      * that a user is granted the specified permission for.
-     *
+     * <p>
      * Ex. /permissions/repositories?user=user&permission=admin
      */
     @GET
@@ -112,7 +115,8 @@ public class PermissionRouter {
 
         Permission permission = getRepositoryPermission(perm);
         if (permission == null) {
-            return Response.status(Status.UNPROCESSABLE_ENTITY).build();
+            return Response.status(Status.UNPROCESSABLE_ENTITY)
+                    .entity("Invalid permission: " + perm + " | Available options: admin, read, write").build();
         }
 
         EscalatedSecurityContext context = securityService.impersonating(user, "Repository Search");
@@ -136,7 +140,8 @@ public class PermissionRouter {
 
         byte[] backing = serialize(bitmap);
         return backing != null ?
-                Response.ok(backing).header("X-Debug-Count", bitmap.getCardinality()).build() :
+                Response.ok(backing).header("X-Debug-Count", bitmap.getCardinality())
+                        .entity("Failed roaring bitmap serialization").build() :
                 Response.serverError().build();
     }
 
