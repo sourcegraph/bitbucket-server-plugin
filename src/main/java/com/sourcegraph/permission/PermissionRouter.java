@@ -19,7 +19,6 @@ import org.springframework.stereotype.Component;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
@@ -78,6 +77,8 @@ public class PermissionRouter {
         builder.repositoryPermission(repository, permission);
         UserSearchRequest search = builder.build();
 
+        // The size of each page in the paginated search is 5000. This is an arbitrarily chosen value
+        // that may require calibration in the future.
         PageRequest pageRequest = new PageRequestImpl(0, 5000);
         do {
             Page<ApplicationUser> page = userService.search(search, pageRequest);
@@ -89,9 +90,8 @@ public class PermissionRouter {
 
         byte[] backing = serialize(bitmap);
         return backing != null ?
-                Response.ok(backing).header("X-Debug-Count", bitmap.getCardinality())
-                        .entity("Failed roaring bitmap serialization").build() :
-                Response.serverError().build();
+                Response.ok(backing).header("X-Debug-Count", bitmap.getCardinality()).build() :
+                Response.serverError().entity("Failed roaring bitmap serialization").build();
     }
 
     /**
@@ -127,9 +127,12 @@ public class PermissionRouter {
             builder.permission(permission);
             RepositorySearchRequest search = builder.build();
 
+            // The size of each page in the paginated search is 5000. This is an arbitrarily chosen value
+            // that may require calibration in the future.
             PageRequest pageRequest = new PageRequestImpl(0, 5000);
             do {
                 Page<Repository> page = repositoryService.search(search, pageRequest);
+
                 for (Repository repository : page.getValues()) {
                     temp.add(repository.getId());
                 }
@@ -140,9 +143,10 @@ public class PermissionRouter {
 
         byte[] backing = serialize(bitmap);
         return backing != null ?
-                Response.ok(backing).header("X-Debug-Count", bitmap.getCardinality())
-                        .entity("Failed roaring bitmap serialization").build() :
-                Response.serverError().build();
+                Response.ok(backing)
+                        .header("X-Debug-Count", bitmap.getCardinality())
+                        .build() :
+                Response.serverError().entity("Failed roaring bitmap serialization").build();
     }
 
     public byte[] serialize(RoaringBitmap bitmap) {
