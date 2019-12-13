@@ -5,9 +5,7 @@ import com.atlassian.bitbucket.repository.Repository;
 import com.atlassian.bitbucket.repository.RepositorySearchRequest;
 import com.atlassian.bitbucket.repository.RepositoryService;
 import com.atlassian.bitbucket.user.*;
-import com.atlassian.bitbucket.util.Page;
-import com.atlassian.bitbucket.util.PageRequest;
-import com.atlassian.bitbucket.util.PageRequestImpl;
+import com.atlassian.bitbucket.util.*;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.sal.api.user.UserManager;
 import com.atlassian.sal.api.user.UserProfile;
@@ -77,16 +75,11 @@ public class PermissionRouter {
         builder.repositoryPermission(repository, permission);
         UserSearchRequest search = builder.build();
 
-        // The size of each page in the paginated search is 5000. This is an arbitrarily chosen value
-        // that may require calibration in the future.
-        PageRequest pageRequest = new PageRequestImpl(0, 5000);
-        do {
-            Page<ApplicationUser> page = userService.search(search, pageRequest);
-            for (ApplicationUser user : page.getValues()) {
-                bitmap.add(user.getId());
-            }
-            pageRequest = page.getNextPageRequest();
-        } while (pageRequest != null);
+        PageProvider<ApplicationUser> pager = (pageRequest) -> userService.search(search, pageRequest);
+        // The size of each page in the paginated search is 1000. This is the maximum sized page.
+        for (ApplicationUser user : PageUtils.toIterable(pager, 1000)) {
+            bitmap.add(user.getId());
+        }
 
         byte[] backing = serialize(bitmap);
         return backing != null ?
@@ -127,17 +120,11 @@ public class PermissionRouter {
             builder.permission(permission);
             RepositorySearchRequest search = builder.build();
 
-            // The size of each page in the paginated search is 5000. This is an arbitrarily chosen value
-            // that may require calibration in the future.
-            PageRequest pageRequest = new PageRequestImpl(0, 5000);
-            do {
-                Page<Repository> page = repositoryService.search(search, pageRequest);
-
-                for (Repository repository : page.getValues()) {
-                    temp.add(repository.getId());
-                }
-                pageRequest = page.getNextPageRequest();
-            } while (pageRequest != null);
+            PageProvider<Repository> pager = (pageRequest) -> repositoryService.search(search, pageRequest);
+            // The size of each page in the paginated search is 1000. This is the maximum sized page.
+            for (Repository repository : PageUtils.toIterable(pager, 1000)) {
+                temp.add(repository.getId());
+            }
             return temp;
         });
 
