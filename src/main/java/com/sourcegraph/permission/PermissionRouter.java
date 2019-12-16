@@ -95,15 +95,15 @@ public class PermissionRouter {
      */
     @GET
     @Path("/repositories")
-    public Response getAccessibleRepositories(@Context HttpServletRequest request, @QueryParam("user") String name, @QueryParam("permission") String perm) {
+    public Response getAccessibleRepositories(@Context HttpServletRequest request, @QueryParam("permission") String perm) {
         UserProfile profile = userManager.getRemoteUser(request);
-        if (profile == null || !userManager.isSystemAdmin(profile.getUserKey())) {
+        if (profile == null) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
-        ApplicationUser user = userService.getUserByName(name);
+        ApplicationUser user = userService.getUserByName(profile.getUsername());
         if (user == null) {
-            return Response.status(Response.Status.NOT_FOUND).entity("No such user: " + name).build();
+            return Response.status(Response.Status.NOT_FOUND).entity("No such user: " + profile.getUsername()).build();
         }
 
         Permission permission = getRepositoryPermission(perm);
