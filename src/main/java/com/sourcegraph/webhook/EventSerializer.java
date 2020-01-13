@@ -28,43 +28,20 @@ public class EventSerializer {
         return raw == null ? null : new JsonParser().parse(raw);
     }
 
-    private static Adapter<PullRequestUpdatedEvent> PullRequestUpdatedEventAdapter = (element, event) -> {
-        element.addProperty("previousTitle", event.getPreviousTitle());
-        element.addProperty("previousDescription", event.getPreviousDescription());
-        element.add("previousTarget", render(event.getPreviousToBranch()));
+    private static Adapter<PullRequestMergeActivityEvent> PullRequestMergeActivityEventAdapter = (element, event) -> {
+        JsonObject activity = element.getAsJsonObject("activity");
+        activity.add("commit", render(event.getActivity().getCommit()));
     };
 
-    private static Adapter<PullRequestReviewersUpdatedEvent> PullRequestReviewersUpdatedEventAdapter = (element, event) -> {
-        element.add("removedReviewers", render(event.getRemovedReviewers()));
-        element.add("addedReviewers", render(event.getAddedReviewers()));
-    };
-
-    private static Adapter<PullRequestParticipantStatusUpdatedEvent> PullRequestParticipantStatusUpdatedEventAdapter = (element, event) -> {
-        element.add("participant", render(event.getParticipant()));
-        element.addProperty("previousStatus", event.getPreviousStatus().name());
-    };
-
-    private static Adapter<PullRequestCommentEvent> PullRequestCommentEventAdapter = (element, event) -> {
-        element.add("comment", render(event.getComment()));
-        if (event.getParent() != null) {
-            element.addProperty("commentParentId", event.getParent().getId());
-        }
-    };
-
-    private static Adapter<PullRequestCommentEditedEvent> PullRequestCommentEditedEventAdapter = (element, event) -> {
-        PullRequestCommentEventAdapter.apply(element, event);
-        element.addProperty("previousComment", event.getPreviousText());
+    private static Adapter<PullRequestReviewersUpdatedActivityEvent> PullRequestReviewersUpdatedActivityEventAdapter = (element, event) -> {
+        JsonObject activity = element.getAsJsonObject("activity");
+        activity.add("addedReviewers", render(event.getActivity().getAddedReviewers()));
+        activity.add("removedReviewers", render(event.getActivity().getRemovedReviewers()));
     };
 
     static {
-        adapters.put(PullRequestUpdatedEvent.class, PullRequestUpdatedEventAdapter);
-        adapters.put(PullRequestReviewersUpdatedEvent.class, PullRequestReviewersUpdatedEventAdapter);
-        adapters.put(PullRequestParticipantApprovedEvent.class, PullRequestParticipantStatusUpdatedEventAdapter);
-        adapters.put(PullRequestParticipantUnapprovedEvent.class, PullRequestParticipantStatusUpdatedEventAdapter);
-        adapters.put(PullRequestParticipantReviewedEvent.class, PullRequestParticipantStatusUpdatedEventAdapter);
-        adapters.put(PullRequestCommentAddedEvent.class, PullRequestCommentEventAdapter);
-        adapters.put(PullRequestCommentDeletedEvent.class, PullRequestCommentEventAdapter);
-        adapters.put(PullRequestCommentEditedEvent.class, PullRequestCommentEditedEventAdapter);
+        adapters.put(PullRequestMergeActivityEvent.class, PullRequestMergeActivityEventAdapter);
+        adapters.put(PullRequestReviewersUpdatedActivityEvent.class, PullRequestReviewersUpdatedActivityEventAdapter);
     }
 
     @Autowired
@@ -80,8 +57,8 @@ public class EventSerializer {
 
     public JsonObject serialize() {
         buildApplicationEvent(this.event);
-        if (event instanceof PullRequestEvent) {
-            buildPullRequestEvent((PullRequestEvent) event);
+        if (event instanceof PullRequestActivityEvent) {
+            buildPullRequestEvent((PullRequestActivityEvent) event);
         }
 
         Adapter adapter = adapters.get(event.getClass());
@@ -100,12 +77,13 @@ public class EventSerializer {
     }
 
     private void buildApplicationEvent(ApplicationEvent event) {
-        payload.addProperty("date", RFC3339.format(event.getDate()));
-        payload.add("actor", render(event.getUser()));
+        payload.addProperty("createdDate", RFC3339.format(event.getDate()));
+        payload.add("user", render(event.getUser()));
     }
 
-    private void buildPullRequestEvent(PullRequestEvent event) {
+    private void buildPullRequestEvent(PullRequestActivityEvent event) {
         payload.add("pullRequest", render(event.getPullRequest()));
+        payload.add("activity", render(event.getActivity()));
     }
 
     private interface Adapter<T> {
