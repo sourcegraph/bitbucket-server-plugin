@@ -33,23 +33,15 @@ public class WebhookListener {
     }
 
     static {
-        register(PullRequestReopenedEvent.class, "pr:opened");
-        register(PullRequestOpenedEvent.class, "pr:opened");
-        register(PullRequestUpdatedEvent.class, "pr:modified");
-        register(PullRequestReviewersUpdatedEvent.class, "pr:reviewer:updated");
-        register(PullRequestParticipantApprovedEvent.class, "pr:reviewer:approved");
-        register(PullRequestParticipantUnapprovedEvent.class, "pr:reviewer:unapproved");
-        register(PullRequestParticipantReviewedEvent.class, "pr:reviewer:needs_work");
-        register(PullRequestMergeActivityEvent.class, "pr:merged");
-        register(PullRequestDeclinedEvent.class, "pr:declined");
-        register(PullRequestDeletedEvent.class, "pr:deleted");
-        register(PullRequestCommentAddedEvent.class, "pr:comment:added");
-        register(PullRequestCommentEditedEvent.class, "pr:comment:edited");
-        register(PullRequestCommentDeletedEvent.class, "pr:comment:deleted");
+        register(PullRequestActivityEvent.class, "pr:activity:status");
+        register(PullRequestRescopeActivityEvent.class, "pr:activity:rescope");
+        register(PullRequestMergeActivityEvent.class, "pr:activity:merge");
+        register(PullRequestCommentActivityEvent.class, "pr:activity:comment");
+        register(PullRequestReviewersUpdatedActivityEvent.class, "pr:activity:reviewers");
     }
 
     @EventListener
-    public void onPullRequestEvent(PullRequestEvent event) {
+    public void onPullRequestEvent(PullRequestActivityEvent event) {
         handle(event, event.getPullRequest().getToRef().getRepository());
     }
 
