@@ -13,7 +13,6 @@ import net.java.ao.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.lang.*;
 import javax.ws.rs.core.Response;
 import java.util.*;
 
@@ -78,15 +77,42 @@ public class WebhookRegistry {
     public static void register(Webhook hook) throws WebhookException {
         String scope = resolveScopeID(hook.scope);
 
-        activeObjects.executeInTransaction(() -> {
-            Map<String, Object> params = new HashMap<>();
-            params.put("NAME", hook.name);
-            params.put("SCOPE", scope);
-            params.put("ENDPOINT", hook.endpoint);
-            params.put("SECRET", hook.secret);
+        WebhookEntity[] ents = activeObjects.find(WebhookEntity.class, Query.select().where("ID = ?", hook.id));
+        if (ents.length == 1) {
+            update(hook, ents[0]);
+        } else {
+            activeObjects.executeInTransaction(() -> {
+                Map<String, Object> params = new HashMap<>();
+                params.put("NAME", hook.name);
+                params.put("SCOPE", scope);
+                params.put("ENDPOINT", hook.endpoint);
+                params.put("SECRET", hook.secret);
 
-            WebhookEntity hookEntity = activeObjects.create(WebhookEntity.class, params);
+                WebhookEntity hookEntity = activeObjects.create(WebhookEntity.class, params);
+                hookEntity.save();
+
+                for (String event : hook.events) {
+                    EventEntity eventEntity = activeObjects.create(EventEntity.class);
+                    eventEntity.setEvent(event);
+                    eventEntity.setWebhook(hookEntity);
+                    eventEntity.save();
+                }
+
+                return hookEntity;
+            });
+        }
+    }
+
+    public static void update(Webhook hook, WebhookEntity hookEntity) {
+        activeObjects.executeInTransaction(() -> {
+            hookEntity.setScope(hook.scope);
+            hookEntity.setEndpoint(hook.endpoint);
+            hookEntity.setSecret(hook.secret);
             hookEntity.save();
+
+            for (EventEntity ent : hookEntity.getEvents()) {
+                activeObjects.delete(ent);
+            }
 
             for (String event : hook.events) {
                 EventEntity eventEntity = activeObjects.create(EventEntity.class);
