@@ -77,51 +77,35 @@ public class WebhookRegistry {
     public static void register(Webhook hook) throws WebhookException {
         String scope = resolveScopeID(hook.scope);
 
-        WebhookEntity[] ents = activeObjects.find(WebhookEntity.class, Query.select().where("ID = ?", hook.id));
-        if (ents.length == 1) {
-            update(hook, ents[0]);
-        } else {
-            activeObjects.executeInTransaction(() -> {
-                Map<String, Object> params = new HashMap<>();
-                params.put("NAME", hook.name);
-                params.put("SCOPE", scope);
-                params.put("ENDPOINT", hook.endpoint);
-                params.put("SECRET", hook.secret);
-
-                WebhookEntity hookEntity = activeObjects.create(WebhookEntity.class, params);
-                hookEntity.save();
-
-                for (String event : hook.events) {
-                    EventEntity eventEntity = activeObjects.create(EventEntity.class);
-                    eventEntity.setEvent(event);
-                    eventEntity.setWebhook(hookEntity);
-                    eventEntity.save();
-                }
-
-                return hookEntity;
-            });
-        }
-    }
-
-    public static void update(Webhook hook, WebhookEntity hookEntity) {
         activeObjects.executeInTransaction(() -> {
-            hookEntity.setScope(hook.scope);
-            hookEntity.setEndpoint(hook.endpoint);
-            hookEntity.setSecret(hook.secret);
-            hookEntity.save();
+            WebhookEntity[] ents = activeObjects.find(WebhookEntity.class, Query.select().where("ID = ?", hook.id));
+            WebhookEntity ent = ents.length == 0 ? activeObjects.create(WebhookEntity.class) : ents[0];
+            ent.setName(hook.name);
+            ent.setScope(scope);
+            ent.setScope(hook.endpoint);
+            ent.setScope(hook.secret);
+            ent.save();
 
-            for (EventEntity ent : hookEntity.getEvents()) {
-                activeObjects.delete(ent);
+            // This logic applies the diff between registered and wanted events.
+            HashSet<String> add = new HashSet<>(hook.events);
+
+            // Remove older events
+            for (EventEntity event : ent.getEvents()) {
+                if (!add.contains(event.getEvent())) {
+                    activeObjects.delete(event);
+                }
+                add.remove(event);
             }
 
-            for (String event : hook.events) {
+            // Add new ones
+            for (String event : add) {
                 EventEntity eventEntity = activeObjects.create(EventEntity.class);
+                eventEntity.setWebhook(ent);
                 eventEntity.setEvent(event);
-                eventEntity.setWebhook(hookEntity);
                 eventEntity.save();
             }
 
-            return hookEntity;
+            return null;
         });
     }
 
