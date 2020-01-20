@@ -6,10 +6,8 @@ import com.atlassian.sal.api.net.RequestFactory;
 import com.atlassian.sal.api.net.Response;
 import com.atlassian.sal.api.net.ResponseException;
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.sourcegraph.webhook.registry.Webhook;
-import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.HmacAlgorithms;
 import org.apache.commons.codec.digest.HmacUtils;
 import org.slf4j.Logger;
@@ -17,13 +15,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
-import java.nio.charset.StandardCharsets;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -56,7 +47,7 @@ public class Dispatcher implements Runnable {
 
     private static String sign(String secret, String data) {
         HmacUtils hmac = new HmacUtils(HmacAlgorithms.HMAC_SHA_256, secret);
-        return hmac.hmacHex(data);
+        return "sha256=" + hmac.hmacHex(data);
     }
 
     private static Request createRequest(Webhook hook, EventSerializer serializer) {

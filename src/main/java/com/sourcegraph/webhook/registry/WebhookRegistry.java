@@ -13,7 +13,6 @@ import net.java.ao.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.lang.*;
 import javax.ws.rs.core.Response;
 import java.util.*;
 
@@ -79,23 +78,34 @@ public class WebhookRegistry {
         String scope = resolveScopeID(hook.scope);
 
         activeObjects.executeInTransaction(() -> {
-            Map<String, Object> params = new HashMap<>();
-            params.put("NAME", hook.name);
-            params.put("SCOPE", scope);
-            params.put("ENDPOINT", hook.endpoint);
-            params.put("SECRET", hook.secret);
+            WebhookEntity[] ents = activeObjects.find(WebhookEntity.class, Query.select().where("ID = ?", hook.id));
+            WebhookEntity ent = ents.length == 0 ? activeObjects.create(WebhookEntity.class) : ents[0];
+            ent.setName(hook.name);
+            ent.setScope(scope);
+            ent.setScope(hook.endpoint);
+            ent.setScope(hook.secret);
+            ent.save();
 
-            WebhookEntity hookEntity = activeObjects.create(WebhookEntity.class, params);
-            hookEntity.save();
+            // This logic applies the diff between registered and wanted events.
+            HashSet<String> add = new HashSet<>(hook.events);
 
-            for (String event : hook.events) {
+            // Remove older events
+            for (EventEntity event : ent.getEvents()) {
+                if (!add.contains(event.getEvent())) {
+                    activeObjects.delete(event);
+                }
+                add.remove(event);
+            }
+
+            // Add new ones
+            for (String event : add) {
                 EventEntity eventEntity = activeObjects.create(EventEntity.class);
+                eventEntity.setWebhook(ent);
                 eventEntity.setEvent(event);
-                eventEntity.setWebhook(hookEntity);
                 eventEntity.save();
             }
 
-            return hookEntity;
+            return null;
         });
     }
 
