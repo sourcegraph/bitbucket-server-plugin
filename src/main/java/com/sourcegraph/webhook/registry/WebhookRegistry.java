@@ -82,8 +82,8 @@ public class WebhookRegistry {
             WebhookEntity ent = ents.length == 0 ? activeObjects.create(WebhookEntity.class) : ents[0];
             ent.setName(hook.name);
             ent.setScope(scope);
-            ent.setScope(hook.endpoint);
-            ent.setScope(hook.secret);
+            ent.setEndpoint(hook.endpoint);
+            ent.setSecret(hook.secret);
             ent.save();
 
             // This logic applies the diff between registered and wanted events.
