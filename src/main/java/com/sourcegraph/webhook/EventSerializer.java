@@ -4,7 +4,6 @@ import com.atlassian.bitbucket.build.BuildStatusSetEvent;
 import com.atlassian.bitbucket.event.ApplicationEvent;
 import com.atlassian.bitbucket.event.pull.*;
 import com.atlassian.bitbucket.json.JsonRenderer;
-import com.atlassian.bitbucket.repository.Repository;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.google.gson.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +20,6 @@ public class EventSerializer {
     private static JsonRenderer renderer;
 
     private ApplicationEvent event;
-    private Repository repository;
     private String name;
     private JsonObject payload;
 
