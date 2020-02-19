@@ -15,8 +15,8 @@
 # ex: ./scripts/release.sh 1.1.0 1.2.0
 
 atlas-package
-gsutil mv gs://sourcegraph-for-bitbucket-server/latest.jar gs://sourcegraph-for-bitbucket-server/${0}.jar
-gsutil mv ./target/sourcegraph-bitbucket-${1}.jar gs://sourcegraph-for-bitbucket-server/latest.jar
+gsutil mv gs://sourcegraph-for-bitbucket-server/latest.jar gs://sourcegraph-for-bitbucket-server/${1}.jar
+gsutil cp ./target/sourcegraph-bitbucket-${2}.jar gs://sourcegraph-for-bitbucket-server/latest.jar
 
 # Allow anyone to download
 gsutil acl ch -u AllUsers:R gs://sourcegraph-for-bitbucket-server/latest.jar
