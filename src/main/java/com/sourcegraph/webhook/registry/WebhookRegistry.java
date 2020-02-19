@@ -75,10 +75,14 @@ public class WebhookRegistry {
     }
 
     public static void register(Webhook hook) throws WebhookException {
+        if (hook.name.equals("")) {
+            throw new WebhookException(Status.UNPROCESSABLE_ENTITY, "Name is required.");
+        }
+
         String scope = resolveScopeID(hook.scope);
 
         activeObjects.executeInTransaction(() -> {
-            WebhookEntity[] ents = activeObjects.find(WebhookEntity.class, Query.select().where("ID = ?", hook.id));
+            WebhookEntity[] ents = activeObjects.find(WebhookEntity.class, Query.select().where("NAME = ?", hook.name));
             WebhookEntity ent = ents.length == 0 ? activeObjects.create(WebhookEntity.class) : ents[0];
             ent.setName(hook.name);
             ent.setScope(scope);
