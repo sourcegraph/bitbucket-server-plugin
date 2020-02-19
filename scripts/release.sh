@@ -19,4 +19,5 @@ gsutil mv gs://sourcegraph-for-bitbucket-server/latest.jar gs://sourcegraph-for-
 gsutil cp ./target/sourcegraph-bitbucket-${2}.jar gs://sourcegraph-for-bitbucket-server/latest.jar
 
 # Allow anyone to download
+gsutil acl ch -u AllUsers:R gs://sourcegraph-for-bitbucket-server/${1}.jar
 gsutil acl ch -u AllUsers:R gs://sourcegraph-for-bitbucket-server/latest.jar
