@@ -1,8 +1,10 @@
 package com.sourcegraph.webhook;
 
+import com.atlassian.bitbucket.build.BuildStatusSetEvent;
 import com.atlassian.bitbucket.event.ApplicationEvent;
 import com.atlassian.bitbucket.event.pull.*;
 import com.atlassian.bitbucket.json.JsonRenderer;
+import com.atlassian.bitbucket.repository.Repository;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.google.gson.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,18 +17,28 @@ import java.util.Map;
 @Component
 public class EventSerializer {
     private static final SimpleDateFormat RFC3339 = new SimpleDateFormat("yyyy-MM-dd'T'h:m:ssZZZZZ");
-    private static Map<Class<?>, Adapter> adapters = new HashMap<>();
+    private static Map<String, Adapter> adapters = new HashMap<>();
     private static JsonRenderer renderer;
 
     private ApplicationEvent event;
+    private Repository repository;
     private String name;
     private JsonObject payload;
 
     private static JsonElement render(Object o) {
+        if (o == null) {
+            return null;
+        }
+
         HashMap<String, Object> options = new HashMap<>();
         String raw = renderer.render(o, options);
         return raw == null ? null : new JsonParser().parse(raw);
     }
+
+    private static Adapter<BuildStatusSetEvent> BuildStatusSetEventAdapter = ((element, event) -> {
+        element.addProperty("commit", event.getCommitId());
+        element.add("status", render(event.getBuildStatus()));
+    });
 
     private static Adapter<PullRequestMergeActivityEvent> PullRequestMergeActivityEventAdapter = (element, event) -> {
         JsonObject activity = element.getAsJsonObject("activity");
@@ -40,8 +52,9 @@ public class EventSerializer {
     };
 
     static {
-        adapters.put(PullRequestMergeActivityEvent.class, PullRequestMergeActivityEventAdapter);
-        adapters.put(PullRequestReviewersUpdatedActivityEvent.class, PullRequestReviewersUpdatedActivityEventAdapter);
+        adapters.put("pr:activity:merge", PullRequestMergeActivityEventAdapter);
+        adapters.put("pr:activity:reviewers", PullRequestReviewersUpdatedActivityEventAdapter);
+        adapters.put("repo:build_status", BuildStatusSetEventAdapter);
     }
 
     @Autowired
@@ -61,7 +74,7 @@ public class EventSerializer {
             buildPullRequestEvent((PullRequestActivityEvent) event);
         }
 
-        Adapter adapter = adapters.get(event.getClass());
+        Adapter adapter = adapters.get(this.name);
         if (adapter != null) {
             adapter.apply(payload, event);
         }

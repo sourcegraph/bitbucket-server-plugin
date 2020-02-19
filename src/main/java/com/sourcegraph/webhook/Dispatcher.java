@@ -58,6 +58,7 @@ public class Dispatcher implements Runnable {
 
         JsonObject payload = serializer.serialize();
         String json = new Gson().toJson(payload);
+        System.out.println(json);
         request.setRequestBody(json);
         request.setHeader("X-Hub-Signature", sign(hook.secret, json));
         return request;
