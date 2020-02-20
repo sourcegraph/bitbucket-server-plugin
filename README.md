@@ -51,6 +51,21 @@ If a user is not logged in to Sourcegraph, they will still see the "View Reposit
 
 ## Local Development
 
+In order to develop locally you will need to install the [Atlassian Plugin SDK](https://developer.atlassian.com/server/framework/atlassian-sdk/downloads/), note that it supports installation via Homebrew on MacOS.
+
+Due some older dependencies, you'll need develop using Java 8. To install on MacOS, do the following:
+
+```
+brew tap AdoptOpenJDK/openjdk
+brew cask install adoptopenjdk8-openj9
+```
+
+Don't forget to set you `JAVA_HOME` environment variable for Java 8. On MacOS you can see your Java installations with the following command:
+
+```aidl
+/usr/libexec/java_home -V
+```
+
 -   `atlas-run` -- installs this plugin into the product and starts it on localhost
 -   `atlas-debug` -- same as atlas-run, but allows a debugger to attach at port 5005
 -   `atlas-help` -- prints description for all commands in the SDK
