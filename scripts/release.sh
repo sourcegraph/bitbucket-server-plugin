@@ -8,7 +8,6 @@
 # 2) gcloud cli setup with sourcegraph-dev project (for uploading jar)
 #
 # This script is to be run in the root folder.
-# It is to be run with two arguments:
 #
 # ./scripts/release.sh <OLD VERSION> <NEW VERSION>
 #

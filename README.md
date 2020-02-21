@@ -56,3 +56,11 @@ If a user is not logged in to Sourcegraph, they will still see the "View Reposit
 -   `atlas-help` -- prints description for all commands in the SDK
 
 See also the Atlassian Plugin SDK [documentation](https://developer.atlassian.com/display/DOCS/Introduction+to+the+Atlassian+Plugin+SDK).
+
+## Releasing
+
+To release a version of the plugin, run `./scripts/release.sh <CURRENT VERSION> <NEW VERSION>`. This script uploads a new version of the plugin jar to google cloud. There are two requirements for this script to work being: (1) atlassian sdk installed and (2) gcloud cli set up with the sourcegraph-dev project.Ex:
+```
+./scripts/release.sh 1.1.0 1.2.0
+```
+The new version should be the one specified in `pom.xml`.
