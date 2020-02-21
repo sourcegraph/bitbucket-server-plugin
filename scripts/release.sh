@@ -13,6 +13,7 @@
 #
 # ex: ./scripts/release.sh 1.1.0 1.2.0
 
+rm -rf ./target/
 atlas-package
 gsutil mv gs://sourcegraph-for-bitbucket-server/latest.jar gs://sourcegraph-for-bitbucket-server/${1}.jar
 gsutil cp ./target/sourcegraph-bitbucket-${2}.jar gs://sourcegraph-for-bitbucket-server/latest.jar
