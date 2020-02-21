@@ -17,8 +17,10 @@ import org.springframework.stereotype.Component;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -52,6 +54,7 @@ public class PermissionRouter {
      */
     @GET
     @Path("/users")
+    @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response getUsersWithRepositoryPermission(@Context HttpServletRequest request, @QueryParam("repository") String repo, @QueryParam("permission") String perm) throws IOException {
         UserProfile profile = userManager.getRemoteUser(request);
         if (profile == null || !userManager.isSystemAdmin(profile.getUserKey())) {
@@ -95,6 +98,7 @@ public class PermissionRouter {
      */
     @GET
     @Path("/repositories")
+    @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response getAccessibleRepositories(@Context HttpServletRequest request, @QueryParam("permission") String perm) {
         UserProfile profile = userManager.getRemoteUser(request);
         if (profile == null) {
