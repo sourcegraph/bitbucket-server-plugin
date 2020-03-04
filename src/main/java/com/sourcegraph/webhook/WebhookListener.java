@@ -69,8 +69,9 @@ public class WebhookListener {
         if (hooks.isEmpty()) {
             return;
         }
-
-        EventSerializer serializer = new EventSerializer(key, event);
-        hooks.forEach(hook -> Dispatcher.dispatch(hook, serializer));
+        hooks.forEach(hook -> {
+            EventSerializer serializer = new EventSerializer(key, event);
+            Dispatcher.dispatch(hook, serializer);
+        });
     }
 }

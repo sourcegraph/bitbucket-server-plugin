@@ -22,7 +22,7 @@ import java.util.concurrent.TimeUnit;
 @Component
 public class Dispatcher implements Runnable {
     private static final Logger log = LoggerFactory.getLogger(Dispatcher.class);
-    private static final int RETRY_DELAY = 10;
+    private static final int[] RETRY_DELAYS = {10, 20, 60, 120, 300};
     private static final int MAX_ATTEMPTS = 5;
     @ComponentImport
     private static ScheduledExecutorService executor;
@@ -31,7 +31,7 @@ public class Dispatcher implements Runnable {
 
     private Webhook hook;
     private Request request;
-    private int attempt;
+    private int attempt = 1;
     private String name;
 
     @Autowired
@@ -90,14 +90,15 @@ public class Dispatcher implements Runnable {
             WebhookRegistry.storeError(this.hook, "Failed: " + e.getMessage());
             log.warn("Failed to dispatch webhook data (" + this.name + ") to URL: [" + hook.endpoint + "]:\n" + e);
         }
-        attempt++;
 
         if (attempt == MAX_ATTEMPTS) {
             log.warn("Exceeded maximum (" + MAX_ATTEMPTS + ") attempts to dispatch webhook data (" + this.name + ") to URL: [" + hook.endpoint + "]");
             return;
         }
 
-        Dispatcher.executor.schedule(this, RETRY_DELAY, TimeUnit.SECONDS);
+        attempt++;
+
+        Dispatcher.executor.schedule(this, RETRY_DELAYS[attempt - 1], TimeUnit.SECONDS);
     }
 
     public static void dispatch(Webhook hook, EventSerializer serializer) {

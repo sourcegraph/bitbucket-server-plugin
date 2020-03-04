@@ -109,7 +109,7 @@ public class WebhookRegistry {
                 if (!add.contains(event.getEvent())) {
                     activeObjects.delete(event);
                 }
-                add.remove(event);
+                add.remove(event.getEvent());
             }
 
             // Add new ones
