@@ -33,6 +33,51 @@
             </div>
         </form>
         <h3>Webhooks</h3>
+        <h4>All webhooks</h4>
+        <table class="aui">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Scope</th>
+                    <th>Endpoint</th>
+                    <th>Events</th>
+                    <th>Last successful</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                #foreach( $hook in $webhooks )
+                    <tr>
+                        <td>
+                            #if( $hook.lastError )
+                            <span class="aui-icon aui-icon-small aui-iconfont-unlink webhook-error-tooltip" title="$hook.lastError"></span>
+                            #end
+                            $hook.name
+                        </td>
+                        <td>$hook.scope</td>
+                        <td>$hook.endpoint</td>
+                        <td>
+                            #foreach($event in $hook.events)
+                                #set($eventNames =$event)
+                                #if( $foreach.hasNext ),#end
+                            #end
+                            $eventNames
+                        </td>
+                        <td>
+                        #if( $hook.lastEvent )
+                        $hook.lastEvent
+                        #else
+                        <em>Never</em>
+                        #end
+                        </td>
+                        <td>
+                            <button type="button" class="aui-button webhook-delete-btn" data-id="$hook.id">Delete</button>
+                        </td>
+                    </tr>
+                #end
+            </tbody>
+        </table>
+
         <h4>Add a webhook</h4>
         <div class="aui-message hidden" id="webhook-message"></div>
         <form id="webhook" class="aui">
@@ -95,50 +140,6 @@
                 </div>
             </div>
         </form>
-        <h4>All webhooks</h4>
-        <table class="aui">
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Scope</th>
-                    <th>Endpoint</th>
-                    <th>Events</th>
-                    <th>Last successful</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                #foreach( $hook in $webhooks )
-                    <tr>
-                        <td>
-                            #if( $hook.lastError )
-                            <span class="aui-icon aui-icon-small aui-iconfont-unlink webhook-error-tooltip" title="$hook.lastError"></span>
-                            #end
-                            $hook.name
-                        </td>
-                        <td>$hook.scope</td>
-                        <td>$hook.endpoint</td>
-                        <td>
-                            #foreach($event in $hook.events)
-                                #set($eventNames =$event)
-                                #if( $foreach.hasNext ),#end
-                            #end
-                            $eventNames
-                        </td>
-                        <td>
-                        #if( $hook.lastEvent )
-                        $hook.lastEvent
-                        #else
-                        <em>Never</em>
-                        #end
-                        </td>
-                        <td>
-                            <button type="button" class="aui-button webhook-delete-btn" data-id="$hook.id">Delete</button>
-                        </td>
-                    </tr>
-                #end
-            </tbody>
-        </table>
     </body>
 
 </html>
