@@ -71,3 +71,5 @@ Don't forget to set you `JAVA_HOME` environment variable for Java 8. On MacOS yo
 -   `atlas-help` -- prints description for all commands in the SDK
 
 See also the Atlassian Plugin SDK [documentation](https://developer.atlassian.com/display/DOCS/Introduction+to+the+Atlassian+Plugin+SDK).
+
+> The default credentials are `admin/admin` for the `atlas-run` environment.

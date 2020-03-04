@@ -7,6 +7,9 @@ import com.atlassian.sal.api.user.UserManager;
 import com.atlassian.sal.api.user.UserProfile;
 import com.atlassian.templaterenderer.TemplateRenderer;
 
+import com.sourcegraph.webhook.registry.Webhook;
+import com.sourcegraph.webhook.registry.WebhookRegistry;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -16,6 +19,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.net.URI;
 
@@ -45,7 +49,9 @@ public class AdminServlet extends HttpServlet {
         Map<String, Object> context = new HashMap<>();
         URI baseUrl = propertiesService.getBaseUrl();
         String baseUrlString = baseUrl.toString();
+        List<Webhook> hooks = WebhookRegistry.getWebhooks();
         context.put("baseUrl", baseUrlString);
+        context.put("webhooks", hooks);
         response.setContentType("text/html;charset=utf-8");
         templateRenderer.render("admin.vm", context, response.getWriter());
     }
