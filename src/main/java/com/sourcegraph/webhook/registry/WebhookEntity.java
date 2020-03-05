@@ -2,6 +2,7 @@ package com.sourcegraph.webhook.registry;
 
 import net.java.ao.Entity;
 import net.java.ao.OneToMany;
+import java.util.Date;
 
 public interface WebhookEntity extends Entity {
     String getName();
@@ -18,4 +19,10 @@ public interface WebhookEntity extends Entity {
 
     String getSecret();
     void setSecret(String secret);
+
+    String getLastError();
+    void setLastError(String error);
+
+    Date getLastEvent();
+    void setLastEvent(Date date);
 }

@@ -26,6 +26,12 @@
         <context>sourcegraph-admin</context>
     </web-resource>
 
+    <web-resource key="sourcegraph-bitbucket-webhooks" name="sourcegraph-bitbucket Web Resources">
+        <dependency>com.atlassian.auiplugin:ajs</dependency>
+        <resource type="download" name="sourcegraph-bitbucket-webhooks.js" location="/js/sourcegraph-bitbucket-webhooks.js"/>
+        <context>sourcegraph-admin</context>
+    </web-resource>
+
     <!-- Admin configuration servlet -->
     <servlet key="admin-servlet" class="com.sourcegraph.admin.AdminServlet">
         <url-pattern>/sourcegraph</url-pattern>
