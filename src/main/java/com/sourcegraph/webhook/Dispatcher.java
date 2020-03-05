@@ -80,10 +80,7 @@ public class Dispatcher implements Runnable {
                 WebhookRegistry.storeError(this.hook, null);
                 return;
             }
-            String error = "Failed to dispatch webhook: ";
-            error += response.getStatusCode();
-            error += " ";
-            error += response.getStatusText();
+            String error = String.format("Failed to dispatch webhook: %d %s", response.getStatusCode(), response.getStatusText());
             WebhookRegistry.storeError(this.hook, error);
             log.warn(this.hookLogMessage(this.hook, error));
         } catch (ResponseException e) {
