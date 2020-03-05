@@ -46,11 +46,7 @@ AJS.toInit(async () => {
             showMessage('error', `Error saving the webhook: ${response.status} ${response.statusText}: ${await response.text()}.`)
         } else {
             showMessage('success', `New webhook successfully created. Reload this page`)
-            form.elements.name.value = ''
-            form.elements.scope.value = ''
-            form.elements.events.value = ''
-            form.elements.endpoint.value = ''
-            form.elements.secret.value = ''
+            form.reset()
         }
     })
 
