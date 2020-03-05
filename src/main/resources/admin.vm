@@ -131,7 +131,7 @@
                 <label for="url">Secret:</label>
                 <input class="text long-field" type="text" name="secret" required minlength="1">
                 <div class="description">
-                    The secret be used in the external service config on your Sourcegraph instance.
+                    The secret be used in the <a href="https://docs.sourcegraph.com/admin/external_service/bitbucket_server#webhooks">Bitbucket Server configuration</a> on your Sourcegraph instance.
                 </div>
             </div>
             <div class="buttons-container">

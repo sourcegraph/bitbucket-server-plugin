@@ -85,7 +85,7 @@ Output: JSON serialized `[]Webhook`
 ```
 curl -X POST 'https://${BITBUCKET_SERVER_URL}/rest/sourcegraph-admin/1.0/webhook' \
     -H 'Content-Type: application/json' \
-    -d '{"name":"", "scope":"", "events":["pr:opened", "pr:merged", "pr:comment:added"], "endpoint":"", "secret":""}'
+    -d '{"name":"sourcegraph-webhook", "scope":"global", "events":["pr"], "endpoint":"https://sourcegraph.example.com/.api/bitbucket-server-webhooks", "secret":"verylongsecret"}'
 ```
 There will be a 204 response code if successful.  
 
