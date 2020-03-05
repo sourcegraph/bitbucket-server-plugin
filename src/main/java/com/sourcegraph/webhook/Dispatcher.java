@@ -84,11 +84,11 @@ public class Dispatcher implements Runnable {
             error += response.getStatusCode();
             error += " ";
             error += response.getStatusText();
-            log.warn(error);
             WebhookRegistry.storeError(this.hook, error);
+            log.warn(this.hookLogMessage(this.hook, error));
         } catch (ResponseException e) {
             WebhookRegistry.storeError(this.hook, "Failed: " + e.getMessage());
-            log.warn("Failed to dispatch webhook data (" + this.name + ") to URL: [" + hook.endpoint + "]:\n" + e);
+            log.warn(this.hookLogMessage(this.hook, e.getMessage()));
         }
 
         if (attempt == MAX_ATTEMPTS) {
@@ -99,6 +99,10 @@ public class Dispatcher implements Runnable {
         attempt++;
 
         Dispatcher.executor.schedule(this, RETRY_DELAYS[attempt - 1], TimeUnit.SECONDS);
+    }
+
+    private String hookLogMessage(Webhook hook, String error) {
+        return "Failed to dispatch webhook data (" + this.name + ") to URL: [" + hook.endpoint + "]:\n" + error;
     }
 
     public static void dispatch(Webhook hook, EventSerializer serializer) {
