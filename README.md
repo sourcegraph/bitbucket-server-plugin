@@ -41,7 +41,7 @@ After installing the Sourcegraph for Bitbucket Server, you should configure it t
 
 3. On the **Sourcegraph Settings** page, set the Sourcegraph URL to the URL of your self-hosted Sourcegraph instance:
 
-<img src="img/sourcegraph-settings.png" alt="Add-ons" width="400px"/>
+<img src="img/sourcegraph-settings.png" alt="Sourcegraph settings" width="400px"/>
 
 ### Usage
 
