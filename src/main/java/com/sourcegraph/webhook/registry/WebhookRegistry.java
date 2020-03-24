@@ -10,14 +10,21 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Iterables;
 import com.sourcegraph.rest.Status;
 import net.java.ao.Query;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import com.sourcegraph.webhook.Dispatcher;
+import com.sourcegraph.webhook.EventSerializer;
 
 import javax.ws.rs.core.Response;
 import java.util.*;
 
 @Component
 public class WebhookRegistry {
+    private static final Logger log = LoggerFactory.getLogger(WebhookRegistry.class);
+
     @ComponentImport
     private static ActiveObjects activeObjects;
     @ComponentImport
@@ -39,15 +46,18 @@ public class WebhookRegistry {
 
     public static List<Webhook> getWebhooks(List<String> keys, Repository repository) {
         String params = Joiner.on(", ").join(Collections.nCopies(keys.size(), "?"));
-        Iterable<Object> args = Iterables.concat(keys, Arrays.asList(
-                repository.getProject().getId(),
-                repository.getId()
-        ));
+        Iterable<Object> args = Iterables.concat(keys);
 
-        String where = "event.EVENT in (" + params + ") "
-                + "AND (webhook.SCOPE = \'global\' "
-                + "OR (webhook.SCOPE = CONCAT(\'project\', ':',  ?)) "
-                + "OR (webhook.SCOPE = CONCAT(\'repository\', ':', ?)))";
+        String where = "event.EVENT in (" + params + ")";
+        if (repository != null) {
+            where += " AND (webhook.SCOPE = \'global\' "
+                    + "OR (webhook.SCOPE = CONCAT(\'project\', ':',  ?)) "
+                    + "OR (webhook.SCOPE = CONCAT(\'repository\', ':', ?)))";
+            args = Iterables.concat(args, Arrays.asList(
+                    repository.getProject().getName(),
+                    repository.getName()
+            ));
+        }
 
         Query query = Query.select()
                 .alias(WebhookEntity.class, "webhook")
@@ -69,7 +79,7 @@ public class WebhookRegistry {
             }
 
             String selector = resolveScopeName(ent.getScope());
-            hooks.add(new Webhook(ent.getID(), ent.getName(), selector, events, ent.getEndpoint(), ent.getSecret()));
+            hooks.add(new Webhook(ent.getID(), ent.getName(), selector, events, ent.getEndpoint(), ent.getSecret(), ent.getLastError(), ent.getLastEvent()));
         }
         return hooks;
     }
@@ -80,7 +90,7 @@ public class WebhookRegistry {
         }
 
         String scope = resolveScopeID(hook.scope);
-
+        
         activeObjects.executeInTransaction(() -> {
             WebhookEntity[] ents = activeObjects.find(WebhookEntity.class, Query.select().where("NAME = ?", hook.name));
             WebhookEntity ent = ents.length == 0 ? activeObjects.create(WebhookEntity.class) : ents[0];
@@ -89,6 +99,7 @@ public class WebhookRegistry {
             ent.setEndpoint(hook.endpoint);
             ent.setSecret(hook.secret);
             ent.save();
+            hook.id = ent.getID();
 
             // This logic applies the diff between registered and wanted events.
             HashSet<String> add = new HashSet<>(hook.events);
@@ -98,7 +109,7 @@ public class WebhookRegistry {
                 if (!add.contains(event.getEvent())) {
                     activeObjects.delete(event);
                 }
-                add.remove(event);
+                add.remove(event.getEvent());
             }
 
             // Add new ones
@@ -108,6 +119,8 @@ public class WebhookRegistry {
                 eventEntity.setEvent(event);
                 eventEntity.save();
             }
+            // send initial event to test the connection
+            Dispatcher.dispatch(hook, "ping", "{}");
 
             return null;
         });
@@ -132,6 +145,23 @@ public class WebhookRegistry {
             }
             return null;
         });
+    }
+
+    public static void storeError(Webhook hook, String error) {
+        WebhookEntity[] ents = activeObjects.find(WebhookEntity.class, Query.select().where("ID = ?", hook.id));
+        if (ents.length == 0) {
+            // fail silently
+            log.warn("Could not find hook with id " + hook.id);
+            return;
+        }
+        if (error != null && error.length() > 255) {
+            error = error.substring(0, 255);
+        }
+        ents[0].setLastError(error);
+        if (error == null) {
+            ents[0].setLastEvent(new Date());
+        }
+        ents[0].save();
     }
 
     private static String resolveScopeID(String scope) throws WebhookException {
@@ -189,4 +219,3 @@ public class WebhookRegistry {
         }
     }
 }
-

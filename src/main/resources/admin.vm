@@ -32,6 +32,114 @@
                     <a id="cancel" class="aui-button aui-button-link cancel" name="cancel" accesskey="c" href="$baseUrl/admin" autocomplete="off" tabindex="0">Cancel</a></div>
             </div>
         </form>
+        <h3>Webhooks</h3>
+        <h4>All webhooks</h4>
+        <table class="aui">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Scope</th>
+                    <th>Endpoint</th>
+                    <th>Events</th>
+                    <th>Last successful</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                #foreach( $hook in $webhooks )
+                    <tr>
+                        <td>
+                            #if( $hook.lastError )
+                            <span class="aui-icon aui-icon-small aui-iconfont-unlink webhook-error-tooltip" title="$hook.lastError"></span>
+                            #end
+                            $hook.name
+                        </td>
+                        <td>$hook.scope</td>
+                        <td>$hook.endpoint</td>
+                        <td>
+                            #foreach($event in $hook.events)
+                                #set($eventNames =$event)
+                                #if( $foreach.hasNext ),#end
+                            #end
+                            $eventNames
+                        </td>
+                        <td>
+                        #if( $hook.lastEvent )
+                        $hook.lastEvent
+                        #else
+                        <em>Never</em>
+                        #end
+                        </td>
+                        <td>
+                            <button type="button" class="aui-button webhook-delete-btn" data-id="$hook.id">Delete</button>
+                        </td>
+                    </tr>
+                #end
+            </tbody>
+        </table>
+
+        <h4>Add a webhook</h4>
+        <div class="aui-message hidden" id="webhook-message"></div>
+        <form id="webhook" class="aui">
+            <div class="field-group">
+                <label for="name">Name:</label>
+                <input class="text long-field" type="text" name="name" id="name" required minlength="1">
+                <div class="description">
+                    An arbitrary name to identify this webhook.
+                </div>
+            </div>
+            <div class="field-group">
+                <label for="scope">Scope:</label>
+                <input class="text long-field" type="text" name="scope" id="scope" required minlength="1">
+                <div class="description">
+                    Can be either <b>global</b>, <b>project:&lt;project name&gt;</b>, or <b>repository:&lt;project key&gt;/&lt;repository name&gt;</b>
+                </div>
+            </div>
+            <div class="field-group">
+                <label for="endpoint">Endpoint:</label>
+                <input class="text long-field" type="url" name="endpoint" id="endpoint" required minlength="1">
+                <div class="description">
+                    This is the URL to the webhook endpoint of your Sourcegraph instance.
+                    <br>
+                    Example: <b>https://sourcegraph.internal.org/.api/bitbucket-server-webhooks</b>
+                </div>
+            </div>
+            <div class="field-group">
+                <label for="events">Events:</label>
+                <input class="text long-field" type="text" name="events" id="events" required minlength="1">
+                <div class="description" style="max-width:500px">
+                    A comma-separated list of any of the following:
+                    <br>
+                    <code>pr</code>,
+                    <code>pr:opened</code>,
+                    <code>pr:modified</code>,
+                    <code>pr:reviewer</code>,
+                    <code>pr:reviewer:updated</code>,
+                    <code>pr:reviewer:approved</code>,
+                    <code>pr:reviewer:unapproved</code>,
+                    <code>pr:reviewer:needs_work</code>,
+                    <code>pr:merged</code>,
+                    <code>pr:declined</code>,
+                    <code>pr:deleted</code>,
+                    <code>pr:comment</code>,
+                    <code>pr:comment:added</code>,
+                    <code>pr:comment:edited</code>,
+                    <code>pr:comment:delete</code>
+                </div>
+            </div>
+            <div class="field-group">
+                <label for="secret">Secret:</label>
+                <input class="text long-field" type="text" name="secret" id="secret" required minlength="1">
+                <div class="description">
+                    The secret be used in the <a href="https://docs.sourcegraph.com/admin/external_service/bitbucket_server#webhooks">Bitbucket Server configuration</a> on your Sourcegraph instance.
+                </div>
+            </div>
+            <div class="buttons-container">
+                <div class="buttons">
+                    <button class="aui-button aui-button-primary" type="submit" id="webhook-submit">Add</button>
+                </div>
+            </div>
+        </form>
     </body>
 
 </html>

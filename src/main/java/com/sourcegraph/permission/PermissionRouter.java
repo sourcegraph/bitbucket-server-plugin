@@ -17,8 +17,10 @@ import org.springframework.stereotype.Component;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -52,6 +54,7 @@ public class PermissionRouter {
      */
     @GET
     @Path("/users")
+    @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response getUsersWithRepositoryPermission(@Context HttpServletRequest request, @QueryParam("repository") String repo, @QueryParam("permission") String perm) throws IOException {
         UserProfile profile = userManager.getRemoteUser(request);
         if (profile == null || !userManager.isSystemAdmin(profile.getUserKey())) {
@@ -95,12 +98,12 @@ public class PermissionRouter {
      */
     @GET
     @Path("/repositories")
+    @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response getAccessibleRepositories(@Context HttpServletRequest request, @QueryParam("permission") String perm) {
         UserProfile profile = userManager.getRemoteUser(request);
         if (profile == null) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
-
         ApplicationUser user = userService.getUserByName(profile.getUsername());
         if (user == null) {
             return Response.status(Response.Status.NOT_FOUND).entity("No such user: " + profile.getUsername()).build();
@@ -121,8 +124,10 @@ public class PermissionRouter {
             RepositorySearchRequest search = builder.build();
 
             PageProvider<Repository> pager = (pageRequest) -> repositoryService.search(search, pageRequest);
-            // The size of each page in the paginated search is 1000. This is the maximum sized page.
-            for (Repository repository : PageUtils.toIterable(pager, 1000)) {
+            // The service always only returns the configured `page.max.repositories` but `hasNextPage` is correctly true
+            // see here https://confluence.atlassian.com/bitbucketserver058/bitbucket-server-config-properties-947168200.html#paging
+            // for configuring that value. Higher values usually result in better performance.
+            for (Repository repository : PageUtils.toIterable(pager, PageRequest.MAX_PAGE_LIMIT)) {
                 temp.add(repository.getId());
             }
             return temp;
