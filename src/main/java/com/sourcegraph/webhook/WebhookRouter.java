@@ -20,6 +20,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Path("/webhook")
 @Component
@@ -59,6 +60,10 @@ public class WebhookRouter {
                 throw new WebhookException(Response.Status.BAD_REQUEST, "Invalid JSON");
             }
             log.info("Registering webhook: " + raw);
+
+            // Trim events
+            hook.events = hook.events.stream().map(String::trim).collect(Collectors.toSet());
+
             WebhookRegistry.register(hook);
         } catch (JsonIOException e) {
             throw new WebhookException(Response.Status.INTERNAL_SERVER_ERROR, "");
