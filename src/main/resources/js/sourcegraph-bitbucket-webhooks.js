@@ -25,7 +25,7 @@ AJS.toInit(async () => {
         submitBtn.classList.add('disabled')
         messageContainer.classList.remove(...errorClasses, ...successClasses)
         messageContainer.classList.add('hidden')
-        const parsedEvents = form.elements.events.value.trim() ? form.elements.events.value.split(':') : []
+        const parsedEvents = form.elements.events.value.trim() ? form.elements.events.value.split(',') : []
         const response = await fetch(restURL, {
             method: 'POST',
             headers: {
