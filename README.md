@@ -87,6 +87,20 @@ Don't forget to set you `JAVA_HOME` environment variable for Java 8. On MacOS yo
 /usr/libexec/java_home -V
 ```
 
+If using IntelliJ you'll need to configure it to use the Atlassian version of Maven. Find your settings.xml file:
+
+```text
+atlas-version
+```
+
+Look for the line ending in `settings.xml`, copy the directory.
+
+In IntelliJ, navigate to Preferences -> Build, Execution, Deployment -> Maven
+
+Override `User Settings File` with the directory you copied above. 
+
+The following commands are also useful for local development:
+
 -   `atlas-run` -- installs this plugin into the product and starts it on localhost
 -   `atlas-debug` -- same as atlas-run, but allows a debugger to attach at port 5005
 -   `atlas-help` -- prints description for all commands in the SDK
