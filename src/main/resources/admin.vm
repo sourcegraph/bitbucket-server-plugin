@@ -125,6 +125,8 @@
                     <code>pr:comment:added</code>,
                     <code>pr:comment:edited</code>,
                     <code>pr:comment:delete</code>
+                    <code>repo</code>,
+                    <code>repo:build_status</code>
                 </div>
             </div>
             <div class="field-group">
