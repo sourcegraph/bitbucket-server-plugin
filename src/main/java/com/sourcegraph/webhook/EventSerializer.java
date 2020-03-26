@@ -51,16 +51,15 @@ public class EventSerializer {
         element.addProperty("commit", event.getCommitId());
         element.add("status", render(event.getBuildStatus()));
 
-        // Extract remote branches
+        // Find Pull Requests
         PullRequestCommitSearchRequest searchRequest = new PullRequestCommitSearchRequest.Builder(event.getCommitId()).build();
-        PageRequest pageRequest = new PageRequestImpl(0,10);
+        PageRequest pageRequest = new PageRequestImpl(0,100);
         Page<PullRequest> prs = pullRequestService.searchByCommit(searchRequest, pageRequest);
 
-        List<String> branches = prs.stream().map(pr -> pr.getFromRef().toString()).collect(Collectors.toList());
         JsonArray ja = new JsonArray();
-        branches.forEach(b -> ja.add(new JsonPrimitive(b)));
+        prs.stream().forEach(pr -> ja.add(render(pr)));
         if (ja.size() > 0) {
-            element.add("remoteBranches", ja);
+            element.add("pullRequests", ja);
         }
     });
 
