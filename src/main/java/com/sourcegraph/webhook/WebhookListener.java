@@ -1,11 +1,8 @@
 package com.sourcegraph.webhook;
 
-import com.atlassian.bitbucket.build.BuildStatusService;
 import com.atlassian.bitbucket.build.BuildStatusSetEvent;
-import com.atlassian.bitbucket.commit.CommitService;
 import com.atlassian.bitbucket.event.ApplicationEvent;
 import com.atlassian.bitbucket.event.pull.*;
-import com.atlassian.bitbucket.pull.PullRequestService;
 import com.atlassian.bitbucket.repository.Repository;
 import com.atlassian.event.api.AsynchronousPreferred;
 import com.atlassian.event.api.EventListener;
