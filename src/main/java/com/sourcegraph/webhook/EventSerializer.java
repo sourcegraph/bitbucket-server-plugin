@@ -58,9 +58,7 @@ public class EventSerializer {
 
         JsonArray ja = new JsonArray();
         prs.stream().forEach(pr -> ja.add(render(pr)));
-        if (ja.size() > 0) {
-            element.add("pullRequests", ja);
-        }
+        element.add("pullRequests", ja);
     });
 
     private static Adapter<PullRequestMergeActivityEvent> PullRequestMergeActivityEventAdapter = (element, event) -> {
