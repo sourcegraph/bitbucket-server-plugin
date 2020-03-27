@@ -9,9 +9,7 @@ import com.atlassian.bitbucket.json.JsonRenderer;
 import com.atlassian.bitbucket.pull.PullRequest;
 import com.atlassian.bitbucket.pull.PullRequestCommitSearchRequest;
 import com.atlassian.bitbucket.pull.PullRequestService;
-import com.atlassian.bitbucket.util.Page;
-import com.atlassian.bitbucket.util.PageRequest;
-import com.atlassian.bitbucket.util.PageRequestImpl;
+import com.atlassian.bitbucket.util.*;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.google.gson.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,11 +51,13 @@ public class EventSerializer {
 
         // Find Pull Requests
         PullRequestCommitSearchRequest searchRequest = new PullRequestCommitSearchRequest.Builder(event.getCommitId()).build();
-        PageRequest pageRequest = new PageRequestImpl(0,100);
-        Page<PullRequest> prs = pullRequestService.searchByCommit(searchRequest, pageRequest);
+        PageProvider<PullRequest> pager = (pageRequest) -> pullRequestService.searchByCommit(searchRequest, pageRequest);
 
         JsonArray ja = new JsonArray();
-        prs.stream().forEach(pr -> ja.add(render(pr)));
+        for (PullRequest pr : PageUtils.toIterable(pager,1000)) {
+            ja.add(render(pr));
+        }
+
         element.add("pullRequests", ja);
     });
 
