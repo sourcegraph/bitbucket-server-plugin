@@ -2,19 +2,31 @@ package com.sourcegraph.webhook;
 
 import com.atlassian.bitbucket.build.BuildStatusSetEvent;
 import com.atlassian.bitbucket.event.ApplicationEvent;
-import com.atlassian.bitbucket.event.pull.*;
+import com.atlassian.bitbucket.event.pull.PullRequestActivityEvent;
+import com.atlassian.bitbucket.event.pull.PullRequestMergeActivityEvent;
+import com.atlassian.bitbucket.event.pull.PullRequestReviewersUpdatedActivityEvent;
 import com.atlassian.bitbucket.json.JsonRenderer;
+import com.atlassian.bitbucket.pull.PullRequest;
+import com.atlassian.bitbucket.pull.PullRequestCommitSearchRequest;
+import com.atlassian.bitbucket.pull.PullRequestService;
+import com.atlassian.bitbucket.util.*;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.google.gson.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.awt.*;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Component
 public class EventSerializer {
+    @ComponentImport
+    private static PullRequestService pullRequestService;
+
     private static final SimpleDateFormat RFC3339 = new SimpleDateFormat("yyyy-MM-dd'T'h:m:ssZZZZZ");
     private static Map<String, Adapter> adapters = new HashMap<>();
     private static JsonRenderer renderer;
@@ -36,6 +48,17 @@ public class EventSerializer {
     private static Adapter<BuildStatusSetEvent> BuildStatusSetEventAdapter = ((element, event) -> {
         element.addProperty("commit", event.getCommitId());
         element.add("status", render(event.getBuildStatus()));
+
+        // Find Pull Requests
+        PullRequestCommitSearchRequest searchRequest = new PullRequestCommitSearchRequest.Builder(event.getCommitId()).build();
+        PageProvider<PullRequest> pager = (pageRequest) -> pullRequestService.searchByCommit(searchRequest, pageRequest);
+
+        JsonArray ja = new JsonArray();
+        for (PullRequest pr : PageUtils.toIterable(pager,1000)) {
+            ja.add(render(pr));
+        }
+
+        element.add("pullRequests", ja);
     });
 
     private static Adapter<PullRequestMergeActivityEvent> PullRequestMergeActivityEventAdapter = (element, event) -> {
@@ -56,8 +79,9 @@ public class EventSerializer {
     }
 
     @Autowired
-    public EventSerializer(@ComponentImport JsonRenderer renderer) {
+    public EventSerializer(@ComponentImport JsonRenderer renderer, PullRequestService pullRequestService) {
         EventSerializer.renderer = renderer;
+        EventSerializer.pullRequestService = pullRequestService;
     }
 
     public EventSerializer(String name, ApplicationEvent event) {

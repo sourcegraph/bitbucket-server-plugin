@@ -16,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.sourcegraph.webhook.Dispatcher;
-import com.sourcegraph.webhook.EventSerializer;
 
 import javax.ws.rs.core.Response;
 import java.util.*;
@@ -119,6 +118,7 @@ public class WebhookRegistry {
                 eventEntity.setEvent(event);
                 eventEntity.save();
             }
+
             // send initial event to test the connection
             Dispatcher.dispatch(hook, "ping", "{}");
 

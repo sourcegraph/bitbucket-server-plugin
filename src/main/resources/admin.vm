@@ -58,10 +58,9 @@
                         <td>$hook.endpoint</td>
                         <td>
                             #foreach($event in $hook.events)
-                                #set($eventNames =$event)
+                                $event
                                 #if( $foreach.hasNext ),#end
                             #end
-                            $eventNames
                         </td>
                         <td>
                         #if( $hook.lastEvent )
@@ -124,7 +123,9 @@
                     <code>pr:comment</code>,
                     <code>pr:comment:added</code>,
                     <code>pr:comment:edited</code>,
-                    <code>pr:comment:delete</code>
+                    <code>pr:comment:delete</code>,
+                    <code>repo</code>,
+                    <code>repo:build_status</code>
                 </div>
             </div>
             <div class="field-group">
