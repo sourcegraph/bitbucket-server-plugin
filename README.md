@@ -107,7 +107,7 @@ The following commands are also useful for local development:
 
 See also the Atlassian Plugin SDK [documentation](https://developer.atlassian.com/display/DOCS/Introduction+to+the+Atlassian+Plugin+SDK).
 
-> The default credentials are `admin/admin` for the `atlas-run` environment.
+The default credentials are `admin/admin` for the `atlas-run` environment.
 
 ### Attaching a debugger
 
@@ -118,3 +118,13 @@ As mentioned above, running `atlas-debug` will run in debug mode. In order to at
 1. The default settings should work, just name it for example `Bitbucket`
 1. Run -> Debug, select the name you used above
 1. The console should say that it has attached and you can add breakpoints etc 
+
+## Releasing
+
+To release a version of the plugin, run `./scripts/release.sh <CURRENT VERSION> <NEW VERSION>`. This script uploads a new version of the plugin jar to google cloud. There are two requirements for this script to work being: (1) atlassian sdk installed and (2) gcloud cli set up with the sourcegraph-dev project.
+
+```
+./scripts/release.sh 1.1.0 1.2.0
+```
+
+The new version should be the one specified in `pom.xml`.
