@@ -95,7 +95,7 @@ atlas-version
 
 Look for the line ending in `settings.xml`, copy the directory.
 
-In IntelliJ, navigate to Preferences -> Build, Execution, Deployment -> Maven
+In IntelliJ, navigate to Preferences -> Build, Execution, Deployment -> Build Tools -> Maven
 
 Override `User Settings File` with the directory you copied above. 
 
