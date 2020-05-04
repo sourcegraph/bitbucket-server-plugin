@@ -39,7 +39,7 @@ public class WebhookRegistry {
     }
 
     public static List<Webhook> getWebhooks() {
-        Query query = Query.select().order("id ASC");
+        Query query = Query.select().order("ID ASC");
         WebhookEntity[] entities = activeObjects.find(WebhookEntity.class, query);
         return getWebhooksFromEntities(entities);
     }
@@ -60,7 +60,7 @@ public class WebhookRegistry {
         }
 
         Query query = Query.select()
-                .order("id ASC")
+                .order("ID ASC")
                 .alias(WebhookEntity.class, "webhook")
                 .alias(EventEntity.class, "event")
                 .join(EventEntity.class, "event.WEBHOOK_ID = webhook.ID")
