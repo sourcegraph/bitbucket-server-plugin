@@ -3,6 +3,9 @@ package com.sourcegraph.webhook;
 import com.atlassian.bitbucket.build.BuildStatusSetEvent;
 import com.atlassian.bitbucket.event.ApplicationEvent;
 import com.atlassian.bitbucket.event.pull.*;
+import com.atlassian.bitbucket.pull.PullRequestAction;
+import com.atlassian.bitbucket.pull.PullRequestParticipant;
+import com.atlassian.bitbucket.pull.PullRequestParticipantStatus;
 import com.atlassian.bitbucket.repository.Repository;
 import com.atlassian.event.api.AsynchronousPreferred;
 import com.atlassian.event.api.EventListener;
@@ -35,8 +38,31 @@ public class WebhookListener {
     }
 
     @EventListener
-    public void onPullRequestEvent(PullRequestActivityEvent event) {
-        String key = "pr:activity:status";
+    public void onPullRequestEvent(PullRequestEvent event) {
+        String key = "pr:event";
+
+        // When review status changes, two events are fired in most cases
+        // 1. A PR Activity Event
+        // 2. A PR Participant Event
+        // We only want to forward the Activity events.
+        // However, when moving from Needs Works to Unapproved, no activity event is fired
+        // and so in this one case we want to forward the Participant Event
+        if (event instanceof PullRequestParticipantStatusUpdatedEvent) {
+            PullRequestAction action = event.getAction();
+            PullRequestParticipantStatus previousStatus = ((PullRequestParticipantStatusUpdatedEvent) event).getPreviousStatus();
+            if (action != PullRequestAction.UNAPPROVED) {
+                return;
+            }
+            if (previousStatus != PullRequestParticipantStatus.NEEDS_WORK) {
+                return;
+            }
+            key =  "pr:participant:status";
+        }
+
+        if (event instanceof  PullRequestActivityEvent) {
+            key = "pr:activity:event";
+        }
+
         if (event instanceof PullRequestRescopeActivityEvent) {
             key = "pr:activity:rescope";
         } else if (event instanceof PullRequestMergeActivityEvent) {

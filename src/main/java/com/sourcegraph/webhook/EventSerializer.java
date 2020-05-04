@@ -3,6 +3,7 @@ package com.sourcegraph.webhook;
 import com.atlassian.bitbucket.build.BuildStatusSetEvent;
 import com.atlassian.bitbucket.event.ApplicationEvent;
 import com.atlassian.bitbucket.event.pull.PullRequestActivityEvent;
+import com.atlassian.bitbucket.event.pull.PullRequestEvent;
 import com.atlassian.bitbucket.event.pull.PullRequestMergeActivityEvent;
 import com.atlassian.bitbucket.event.pull.PullRequestReviewersUpdatedActivityEvent;
 import com.atlassian.bitbucket.json.JsonRenderer;
@@ -89,8 +90,13 @@ public class EventSerializer {
 
     public JsonObject serialize() {
         buildApplicationEvent(this.event);
+
+        if (event instanceof PullRequestEvent) {
+            buildPullRequestEvent((PullRequestEvent) event);
+        }
+
         if (event instanceof PullRequestActivityEvent) {
-            buildPullRequestEvent((PullRequestActivityEvent) event);
+            buildPullRequestActivityEvent((PullRequestActivityEvent) event);
         }
 
         Adapter adapter = adapters.get(this.name);
@@ -113,8 +119,12 @@ public class EventSerializer {
         payload.add("user", render(event.getUser()));
     }
 
-    private void buildPullRequestEvent(PullRequestActivityEvent event) {
+    private void buildPullRequestEvent(PullRequestEvent event) {
         payload.add("pullRequest", render(event.getPullRequest()));
+        payload.addProperty("action", event.getAction().toString());
+    }
+
+    private void buildPullRequestActivityEvent(PullRequestActivityEvent event) {
         payload.add("activity", render(event.getActivity()));
     }
 
