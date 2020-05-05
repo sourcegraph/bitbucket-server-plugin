@@ -101,7 +101,7 @@ Override `User Settings File` with the directory you copied above.
 
 The following commands are also useful for local development:
 
--   `atlas-run` -- installs this plugin into the product and starts it on localhost
+-   `atlas-run` -- installs this plugin into the product and starts it on localhost (`--context-path /` will run it on [http://localhost:7990](http://localhost:7990) instead of [http://localhost:7990/bitbucket](http://localhost:7990/bitbucket))
 -   `atlas-debug` -- same as atlas-run, but allows a debugger to attach at port 5005
 -   `atlas-help` -- prints description for all commands in the SDK
 
