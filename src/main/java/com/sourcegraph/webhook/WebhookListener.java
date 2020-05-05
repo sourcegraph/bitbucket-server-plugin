@@ -41,7 +41,8 @@ public class WebhookListener {
     public void onPullRequestEvent(PullRequestEvent event) {
         String key = "pr:event";
 
-        // When review status changes, two events are fired in most cases
+        // When review status changes, two events are fired in in all cases apart from
+        // when we move from Needs Work to Unapproved.
         // 1. A PR Activity Event
         // 2. A PR Participant Event
         // We only want to forward the Activity events.
