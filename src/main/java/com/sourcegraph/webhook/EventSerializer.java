@@ -115,7 +115,7 @@ public class EventSerializer {
     }
 
     private void buildApplicationEvent(ApplicationEvent event) {
-        payload.addProperty("createdDate", RFC3339.format(event.getDate()));
+        payload.addProperty("createdDate", event.getDate().toInstant().toEpochMilli());
         payload.add("user", render(event.getUser()));
     }
 

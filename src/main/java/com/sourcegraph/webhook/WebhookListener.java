@@ -59,10 +59,9 @@ public class WebhookListener {
             key =  "pr:participant:status";
         }
 
-        if (event instanceof  PullRequestActivityEvent) {
+        if (event instanceof PullRequestActivityEvent) {
             key = "pr:activity:event";
         }
-
         if (event instanceof PullRequestRescopeActivityEvent) {
             key = "pr:activity:rescope";
         } else if (event instanceof PullRequestMergeActivityEvent) {
