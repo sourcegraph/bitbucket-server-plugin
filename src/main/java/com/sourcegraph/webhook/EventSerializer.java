@@ -3,6 +3,7 @@ package com.sourcegraph.webhook;
 import com.atlassian.bitbucket.build.BuildStatusSetEvent;
 import com.atlassian.bitbucket.event.ApplicationEvent;
 import com.atlassian.bitbucket.event.pull.PullRequestActivityEvent;
+import com.atlassian.bitbucket.event.pull.PullRequestEvent;
 import com.atlassian.bitbucket.event.pull.PullRequestMergeActivityEvent;
 import com.atlassian.bitbucket.event.pull.PullRequestReviewersUpdatedActivityEvent;
 import com.atlassian.bitbucket.json.JsonRenderer;
@@ -15,12 +16,9 @@ import com.google.gson.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.awt.*;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Component
 public class EventSerializer {
@@ -92,8 +90,13 @@ public class EventSerializer {
 
     public JsonObject serialize() {
         buildApplicationEvent(this.event);
+
+        if (event instanceof PullRequestEvent) {
+            buildPullRequestEvent((PullRequestEvent) event);
+        }
+
         if (event instanceof PullRequestActivityEvent) {
-            buildPullRequestEvent((PullRequestActivityEvent) event);
+            buildPullRequestActivityEvent((PullRequestActivityEvent) event);
         }
 
         Adapter adapter = adapters.get(this.name);
@@ -112,12 +115,16 @@ public class EventSerializer {
     }
 
     private void buildApplicationEvent(ApplicationEvent event) {
-        payload.addProperty("createdDate", RFC3339.format(event.getDate()));
+        payload.addProperty("createdDate", event.getDate().toInstant().toEpochMilli());
         payload.add("user", render(event.getUser()));
     }
 
-    private void buildPullRequestEvent(PullRequestActivityEvent event) {
+    private void buildPullRequestEvent(PullRequestEvent event) {
         payload.add("pullRequest", render(event.getPullRequest()));
+        payload.addProperty("action", event.getAction().toString());
+    }
+
+    private void buildPullRequestActivityEvent(PullRequestActivityEvent event) {
         payload.add("activity", render(event.getActivity()));
     }
 
