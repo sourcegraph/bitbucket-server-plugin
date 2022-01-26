@@ -3,3 +3,4 @@ steps:
     command: atlas-package
   - label: ':lock: security - checkov'
     command: .buildkite/ci-checkov.sh
+    agents: { queue: standard }
