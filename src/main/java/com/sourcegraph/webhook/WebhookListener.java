@@ -1,10 +1,9 @@
 package com.sourcegraph.webhook;
 
-import com.atlassian.bitbucket.build.BuildStatusSetEvent;
+import com.atlassian.bitbucket.build.status.RepositoryBuildStatusSetEvent;
 import com.atlassian.bitbucket.event.ApplicationEvent;
 import com.atlassian.bitbucket.event.pull.*;
 import com.atlassian.bitbucket.pull.PullRequestAction;
-import com.atlassian.bitbucket.pull.PullRequestParticipant;
 import com.atlassian.bitbucket.pull.PullRequestParticipantStatus;
 import com.atlassian.bitbucket.repository.Repository;
 import com.atlassian.event.api.AsynchronousPreferred;
@@ -77,7 +76,7 @@ public class WebhookListener {
     }
 
     @EventListener
-    public void onBuildStatusEvent(BuildStatusSetEvent event) {
+    public void onRepositoryBuildStatusSetEvent(RepositoryBuildStatusSetEvent event) {
         handle(event, "repo:build_status");
     }
 
