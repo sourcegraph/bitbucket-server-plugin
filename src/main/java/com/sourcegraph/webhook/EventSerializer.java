@@ -1,6 +1,6 @@
 package com.sourcegraph.webhook;
 
-import com.atlassian.bitbucket.build.BuildStatusSetEvent;
+import com.atlassian.bitbucket.build.status.RepositoryBuildStatusSetEvent;
 import com.atlassian.bitbucket.event.ApplicationEvent;
 import com.atlassian.bitbucket.event.pull.PullRequestActivityEvent;
 import com.atlassian.bitbucket.event.pull.PullRequestEvent;
@@ -43,12 +43,12 @@ public class EventSerializer {
         return raw == null ? null : new JsonParser().parse(raw);
     }
 
-    private static Adapter<BuildStatusSetEvent> BuildStatusSetEventAdapter = ((element, event) -> {
-        element.addProperty("commit", event.getCommitId());
+    private static Adapter<RepositoryBuildStatusSetEvent> RepositoryBuildStatusSetEventAdapter = ((element, event) -> {
+        element.addProperty("commit", event.getBuildStatus().getCommitId());
         element.add("status", render(event.getBuildStatus()));
 
         // Find Pull Requests
-        PullRequestCommitSearchRequest searchRequest = new PullRequestCommitSearchRequest.Builder(event.getCommitId()).build();
+        PullRequestCommitSearchRequest searchRequest = new PullRequestCommitSearchRequest.Builder(event.getBuildStatus().getCommitId()).build();
         PageProvider<PullRequest> pager = (pageRequest) -> pullRequestService.searchByCommit(searchRequest, pageRequest);
 
         JsonArray ja = new JsonArray();
@@ -73,7 +73,7 @@ public class EventSerializer {
     static {
         adapters.put("pr:activity:merge", PullRequestMergeActivityEventAdapter);
         adapters.put("pr:activity:reviewers", PullRequestReviewersUpdatedActivityEventAdapter);
-        adapters.put("repo:build_status", BuildStatusSetEventAdapter);
+        adapters.put("repo:build_status", RepositoryBuildStatusSetEventAdapter);
     }
 
     @Autowired
