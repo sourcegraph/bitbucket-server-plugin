@@ -3,6 +3,7 @@ package com.sourcegraph.webhook;
 import com.atlassian.bitbucket.build.status.RepositoryBuildStatusSetEvent;
 import com.atlassian.bitbucket.event.ApplicationEvent;
 import com.atlassian.bitbucket.event.pull.*;
+import com.atlassian.bitbucket.event.repository.RepositoryPushEvent;
 import com.atlassian.bitbucket.pull.PullRequestAction;
 import com.atlassian.bitbucket.pull.PullRequestParticipantStatus;
 import com.atlassian.bitbucket.repository.Repository;
@@ -18,7 +19,6 @@ import java.util.List;
 @AsynchronousPreferred
 @Named("WebhookListener")
 public class WebhookListener {
-
     // getTriggers enumerate all prefixes (or super/parent events) of event key.
     // "pr:comment:added" -> ["pr", "pr:comment", "pr:comment:added"]
     public List<String> getTriggers(String key) {
@@ -78,6 +78,11 @@ public class WebhookListener {
     @EventListener
     public void onRepositoryBuildStatusSetEvent(RepositoryBuildStatusSetEvent event) {
         handle(event, "repo:build_status");
+    }
+
+    @EventListener
+    public void onRepositoryPushEvent(RepositoryPushEvent event) {
+        handle(event, "repo:refs_changed");
     }
 
     public void handle(ApplicationEvent event, String key) {
