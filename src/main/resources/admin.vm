@@ -14,6 +14,7 @@
                 </div>
             </div>
         </header>
+        <h3>Code intelligence setup</h3>
         <p>
             Connect Bitbucket to your Sourcegraph instance to get code intelligence on code views and pull requests.
         </p>
@@ -100,7 +101,7 @@
                 <div class="description">
                     This is the URL to the webhook endpoint of your Sourcegraph instance.
                     <br>
-                    Example: <b>https://sourcegraph.internal.org/.api/bitbucket-server-webhooks</b>
+                    Example: <b>https://sourcegraph.example.com/.api/webhooks/54104dbb-0b71-4a83-aa6b-eef46241614a</b>
                 </div>
             </div>
             <div class="field-group">
@@ -125,14 +126,15 @@
                     <code>pr:comment:edited</code>,
                     <code>pr:comment:delete</code>,
                     <code>repo</code>,
-                    <code>repo:build_status</code>
+                    <code>repo:build_status</code>,
+                    <code>repo:refs_changed</code>
                 </div>
             </div>
             <div class="field-group">
                 <label for="secret">Secret:</label>
                 <input class="text long-field" type="text" name="secret" id="secret" required minlength="1">
                 <div class="description">
-                    The secret be used in the <a href="https://docs.sourcegraph.com/admin/external_service/bitbucket_server#webhooks">Bitbucket Server configuration</a> on your Sourcegraph instance.
+                    The secret from the uncoming Webhook configuration page in Sourcegraph.
                 </div>
             </div>
             <div class="buttons-container">

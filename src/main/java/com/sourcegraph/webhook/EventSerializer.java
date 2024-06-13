@@ -6,6 +6,7 @@ import com.atlassian.bitbucket.event.pull.PullRequestActivityEvent;
 import com.atlassian.bitbucket.event.pull.PullRequestEvent;
 import com.atlassian.bitbucket.event.pull.PullRequestMergeActivityEvent;
 import com.atlassian.bitbucket.event.pull.PullRequestReviewersUpdatedActivityEvent;
+import com.atlassian.bitbucket.event.repository.RepositoryPushEvent;
 import com.atlassian.bitbucket.json.JsonRenderer;
 import com.atlassian.bitbucket.pull.PullRequest;
 import com.atlassian.bitbucket.pull.PullRequestCommitSearchRequest;
@@ -99,6 +100,10 @@ public class EventSerializer {
             buildPullRequestActivityEvent((PullRequestActivityEvent) event);
         }
 
+        if (event instanceof RepositoryPushEvent) {
+            buildRepositoryPushEvent((RepositoryPushEvent) event);
+        }
+
         Adapter adapter = adapters.get(this.name);
         if (adapter != null) {
             adapter.apply(payload, event);
@@ -122,6 +127,11 @@ public class EventSerializer {
     private void buildPullRequestEvent(PullRequestEvent event) {
         payload.add("pullRequest", render(event.getPullRequest()));
         payload.addProperty("action", event.getAction().toString());
+    }
+
+    private void buildRepositoryPushEvent(RepositoryPushEvent event) {
+        payload.add("repository", render(event.getRepository()));
+        payload.add("refChanges", render(event.getRefChanges()));
     }
 
     private void buildPullRequestActivityEvent(PullRequestActivityEvent event) {
