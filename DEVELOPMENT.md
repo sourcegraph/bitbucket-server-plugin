@@ -2,30 +2,35 @@
 
 Due some older dependencies, you'll need develop using Java 8. To install on MacOS, do the following:
 
-```
+```sh
 brew install --cask temurin@8
 ```
 
 In order to develop locally you will need to install the [Atlassian Plugin SDK](https://developer.atlassian.com/server/framework/atlassian-sdk/downloads/), note that it supports installation via Homebrew on MacOS:
 
-```bash
+```sh
 brew tap atlassian/tap
 brew install atlassian/tap/atlassian-plugin-sdk
 ```
 
 Don't forget to set you `JAVA_HOME` environment variable for Java 8. On MacOS you can see your Java installations with the following command:
 
-```aidl
+```sh
 /usr/libexec/java_home -V
 ```
 
-If using IntelliJ you'll need to configure it to use the Atlassian version of Maven. Find your settings.xml file:
+If using IntelliJ you'll need to configure it to use the Atlassian version of Maven. Find your `settings.xml` file by running the Atlassian Plugin SDK version tool:
 
-```text
+```sh
 atlas-version
 ```
 
 Look for the line ending in `settings.xml`, copy the directory.
+
+This command should print out the directory path for you:
+```sh
+dirname $(atlas-version | grep 'settings\.xml$' | awk '{print $NF}')
+```
 
 In IntelliJ, navigate to Preferences -> Build, Execution, Deployment -> Build Tools -> Maven
 
