@@ -10,7 +10,7 @@
     </plugin-info>
 
     <!-- Active Objects module -->
-    <ao key="ao" namespace="com.sourcegraph.bitbucket-sourcegraph-plugin">
+    <ao key="ao-module">
         <entity>com.sourcegraph.webhook.registry.WebhookEntity</entity>
         <entity>com.sourcegraph.webhook.registry.EventEntity</entity>
     </ao>
