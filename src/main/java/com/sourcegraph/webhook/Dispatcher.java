@@ -2,7 +2,7 @@ package com.sourcegraph.webhook;
 
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.sal.api.net.Request;
-import com.atlassian.sal.api.net.RequestFactory;
+import com.atlassian.sal.api.net.NonMarshallingRequestFactory;
 import com.atlassian.sal.api.net.Response;
 import com.atlassian.sal.api.net.ResponseException;
 import com.google.gson.Gson;
@@ -27,7 +27,7 @@ public class Dispatcher implements Runnable {
     @ComponentImport
     private static ScheduledExecutorService executor;
     @ComponentImport
-    private static RequestFactory requestFactory;
+    private static NonMarshallingRequestFactory requestFactory;
 
     private Webhook hook;
     private Request request;
@@ -35,7 +35,7 @@ public class Dispatcher implements Runnable {
     private String name;
 
     @Autowired
-    public Dispatcher(ScheduledExecutorService executor, RequestFactory<?> requestFactory) {
+    public Dispatcher(ScheduledExecutorService executor, NonMarshallingRequestFactory<?> requestFactory) {
         Dispatcher.executor = executor;
         Dispatcher.requestFactory = requestFactory;
     }

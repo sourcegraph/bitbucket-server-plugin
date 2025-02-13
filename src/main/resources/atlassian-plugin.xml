@@ -10,13 +10,14 @@
     </plugin-info>
 
     <!-- Active Objects module -->
-    <ao key="ao-module">
+    <ao key="ao" namespace="com.sourcegraph.bitbucket-sourcegraph-plugin">
         <entity>com.sourcegraph.webhook.registry.WebhookEntity</entity>
         <entity>com.sourcegraph.webhook.registry.EventEntity</entity>
     </ao>
 
     <!-- Web resources -->
     <web-resource key="sourcegraph-bitbucket-resources" name="sourcegraph-bitbucket Web Resources">
+        <description>AO classes for the Sourcegraph plugin entities</description>
         <dependency>com.atlassian.auiplugin:ajs</dependency>
         <resource type="download" name="sourcegraph-bitbucket.js" location="/js/sourcegraph-bitbucket.js"/>
         <context>atl.general</context>
@@ -35,7 +36,7 @@
     </web-resource>
 
     <!-- Admin configuration servlet -->
-    <servlet key="admin-servlet" class="com.sourcegraph.admin.AdminServlet">
+    <servlet key="sourcegraph-admin-servlet" name="Configure Sourcegraph integration" class="com.sourcegraph.admin.AdminServlet">
         <url-pattern>/sourcegraph</url-pattern>
     </servlet>
 
@@ -48,7 +49,7 @@
     </web-item>
 
     <!-- REST service -->
-    <rest key="rest" path="/sourcegraph-admin" version="1.0">
+    <rest key="sourcegraphAdminREST" path="/sourcegraph-admin" version="1.0">
         <description>Provides REST resources for Sourcegraph.</description>
     </rest>
 </atlassian-plugin>
