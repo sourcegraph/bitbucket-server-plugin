@@ -1,9 +1,9 @@
 # Local Development
 
-Due some older dependencies, you'll need develop using Java 8. To install on MacOS, do the following:
+Due some older dependencies, you'll need to develop using Java 17. To install on MacOS, do the following:
 
 ```sh
-brew install --cask temurin@8
+brew install --cask temurin@17
 ```
 
 In order to develop locally you will need to install the [Atlassian Plugin SDK](https://developer.atlassian.com/server/framework/atlassian-sdk/downloads/), note that it supports installation via Homebrew on MacOS:
