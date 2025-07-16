@@ -13,7 +13,7 @@ brew tap atlassian/tap
 brew install atlassian/tap/atlassian-plugin-sdk
 ```
 
-Don't forget to set you `JAVA_HOME` environment variable for Java 8. On MacOS you can see your Java installations with the following command:
+Don't forget to set your `JAVA_HOME` environment variable for Java 17. On MacOS you can see your Java installations with the following command:
 
 ```sh
 /usr/libexec/java_home -V
