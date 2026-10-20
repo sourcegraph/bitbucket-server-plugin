@@ -52,9 +52,12 @@ The webhook receiver defaults to Docker's Linux bridge (`172.17.0.1:8765`). Pass
 all local interfaces so the container can reach it; do not expose that test port.
 
 Buildkite packages on Java 21 and runs this suite on 10.0.2, 10.1.5, 10.2.8,
-10.3.2, 10.4.3, and 10.5.1. Agents need Docker, passwordless sudo for fixture
-ownership, Python 3, curl/unzip/Git, and uv (pinned in `.tool-versions`).
-`.buildkite/test-runtime.py VERSION` owns one finite fixture/test lifecycle.
+10.3.2, 10.4.3, and 10.5.1. Agents need Docker access, Python 3, and tar.
+CI copies files through Docker's API rather than bind-mounting the agent's
+filesystem, so sidecar daemons work too. A pinned Python/uv test container shares
+the Bitbucket container's network for REST, Git, and webhook callbacks; no ports
+are exposed. `.buildkite/test-runtime.py VERSION` owns this finite lifecycle and
+removes both containers and anonymous volumes even when assertions fail.
 
 For the Bitbucket 9 control, use the unchanged published 3.0.1 JAR on 9.6.5;
 its SHA-256 is `5ed6887a33b0bacfe37943b50540f653dbc0c8846cffc4af3c0cbe93a41701de`.
