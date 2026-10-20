@@ -82,15 +82,35 @@ the adapter changes; do not infer the customer's bundle from this repository or
 from Sourcegraph master. Fixture/DOM tests alone do not prove code intelligence
 against a real Sourcegraph backend.
 
-The October 2026 verification used real SCIP indexes on Sourcegraph 6.12.0 with
-the updated integration bundle against Bitbucket 9.6.5 and 10.5.1. Source/PR
-hovers, unequal diff sides, history/branch switching, and native text selection
-were exercised. This mixed-version setup is **not** a supported upgrade: current
-Sourcegraph uses `/r/` repository routes, which 6.12.0 does not serve. A definition
-click returned 404; a references click opened the file but did not prove the
-references panel. Validate navigation again on a matching Sourcegraph server and
-bundle before release. Older native Git HTTP also requires the bearer-token fix
-or the connector's supported SSH configuration when Bitbucket disables Basic auth.
+The October 2026 verification used a matching Sourcegraph `sg start` stack with
+a normal development license, freshly built frontend/Gitserver and integration
+bundle, and real SCIP indexes against Bitbucket 9.6.5 and 10.5.1. It exercised
+source/history and unified/split PR hovers, unequal diff sides, native text
+selection, definition clicks, populated reference panels and result navigation.
+Private Bitbucket 10 repositories cloned through the native connector with Basic
+auth disabled; wrong bearer credentials failed while valid PATs succeeded.
+
+That testing found two additional bugs: PR file switching kept the previous
+file's hover state, and position-only reference URLs produced empty Explore
+results because the API requires the complete symbol range. Both fixes were
+verified on the real stack, including deleted-file base revisions and head-file
+revisions after switching in both directions. The reference scenario changed
+from zero results to three precise references without changing its index or data.
+The two fixture indexes share exported package/symbol identities, so exported
+definitions may resolve to the equivalent fixture on the other Bitbucket host;
+this does not prove same-repository attribution. Local-symbol navigation and
+reference request repository/path/revision were checked independently.
+
+The Sourcegraph release must include the [shared hover fixes](https://github.com/sourcegraph/sourcegraph/pull/17288),
+[Bitbucket adapter and PR lifetime fixes](https://github.com/sourcegraph/sourcegraph/pull/17285),
+[Git bearer-token authentication](https://github.com/sourcegraph/sourcegraph/pull/17287),
+and [reference URL resolution](https://github.com/sourcegraph/sourcegraph/pull/17302).
+Track integration and release selection in [CU-3522](https://linear.app/sourcegraph/issue/CU-3522/ship-bitbucket-data-center-10-compatibility).
+These are development-stack results, not a released Sourcegraph version. The
+earlier mixed-version test against Sourcegraph 6.12.0 is not a supported upgrade:
+that server does not serve current `/r/` routes. Do not retrofit only the bundle
+onto an older server. Older native Git HTTP also needs the bearer-token fix or
+the connector's supported SSH configuration when Bitbucket disables Basic auth.
 
 ## Release without breaking Bitbucket 9
 
