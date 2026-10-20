@@ -1,6 +1,22 @@
 steps:
-  - label: ":bitbucket:"
-    command: atlas-package
+  - label: ":bitbucket: Java 21 package"
+    key: package
+    command: .buildkite/build.sh
+    artifact_paths: "target/sourcegraph-bitbucket-*.jar"
+    agents: { queue: standard }
+  - label: ":bitbucket: runtime {{matrix}}"
+    depends_on: package
+    matrix:
+      - "10.0.2"
+      - "10.1.5"
+      - "10.2.8"
+      - "10.3.2"
+      - "10.4.3"
+      - "10.5.1"
+    command:
+      - buildkite-agent artifact download 'target/sourcegraph-bitbucket-*.jar' . --step package
+      - python3 .buildkite/test-runtime.py '{{matrix}}'
+    agents: { queue: standard }
   - label: ':lock: security - checkov'
     command: .buildkite/ci-checkov.sh
     agents: { queue: standard }

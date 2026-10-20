@@ -1,67 +1,126 @@
-# Local Development
+# Development and compatibility
 
-Due some older dependencies, you'll need to develop using Java 17. To install on MacOS, do the following:
+The 4.x line targets Bitbucket Data Center 10 (Java 21, Platform 8, Jakarta EE 10).
+The published 3.0.1 line targets Bitbucket 9 (Java 17, Platform 7, `javax`). These
+are different artifacts, not one JAR with wider Marketplace compatibility bounds.
 
-```sh
-brew install --cask temurin@17
-```
-
-In order to develop locally you will need to install the [Atlassian Plugin SDK](https://developer.atlassian.com/server/framework/atlassian-sdk/downloads/), note that it supports installation via Homebrew on MacOS:
+Install a Java 21 JDK and Maven 3.8.7 or later, then run from the repository root:
 
 ```sh
-brew tap atlassian/tap
-brew install atlassian/tap/atlassian-plugin-sdk
+mvn -B -ntp clean verify
 ```
 
-Don't forget to set your `JAVA_HOME` environment variable for Java 17. On MacOS you can see your Java installations with the following command:
+`.mvn/settings.xml` supplies Atlassian and Central repositories for dependencies
+and Maven plugins; the Atlassian SDK is not required to package the app. The JAR
+is `target/sourcegraph-bitbucket-4.0.0.jar`. Packaging alone does not prove OSGi
+activation: there are no JVM unit tests; the public-interface runtime suite below
+is the regression check for this migration.
+
+In an Amp orb, `.agents/setup` installs Java/Maven and warms the dependency cache.
+It is idempotent. Docker is needed only for runtime tests. Start the daemon as a
+supervised service if necessary:
 
 ```sh
-/usr/libexec/java_home -V
+amp orb service start docker --command 'sudo dockerd --host=unix:///var/run/docker.sock'
 ```
 
-If using IntelliJ you'll need to configure it to use the Atlassian version of Maven. Find your `settings.xml` file by running the Atlassian Plugin SDK version tool:
+## Runtime regression tests
+
+`scripts/run-bitbucket.sh` downloads Atlassian's matching development home and
+runs the official image in the foreground, bound to loopback. The home must be a
+new, disposable directory. It contains development credentials and a license;
+never commit it, upload raw logs, or use it as production data.
 
 ```sh
-atlas-version
+amp orb service start bitbucket-test --command "$PWD/scripts/run-bitbucket.sh 10.5.1 $PWD/target/sourcegraph-bitbucket-4.0.0.jar 7990 /tmp/bitbucket-test"
+uv run scripts/test-runtime.py --url http://localhost:7990
+amp orb service stop bitbucket-test
+sudo rm -rf /tmp/bitbucket-test # only the disposable home created above
 ```
 
-Look for the line ending in `settings.xml`, copy the directory.
+Outside an orb, run the fixture command in one terminal and the test in another.
+The test waits for `RUNNING`, authenticates via browser-session login and bearer
+PATs, checks config authorization and exact Roaring bitmap/native API parity for
+read/write/admin access, and creates a real Git push and PR comment to verify
+webhook payloads and independently computed HMAC signatures. It also checks
+anonymous/non-admin denials, identity isolation, error boundaries, and deletion.
+Run once per fresh home; it intentionally leaves its test users and repositories
+in that disposable home. `--keep-hook` retains the webhook for restart checks.
 
-This command should print out the directory path for you:
-```sh
-dirname $(atlas-version | grep 'settings\.xml$' | awk '{print $NF}')
-```
+The webhook receiver defaults to Docker's Linux bridge (`172.17.0.1:8765`). Pass
+`--sink-port` and `--sink-url` for another bridge or concurrent runs. It listens on
+all local interfaces so the container can reach it; do not expose that test port.
 
-In IntelliJ, navigate to Preferences -> Build, Execution, Deployment -> Build Tools -> Maven
+Buildkite packages on Java 21 and runs this suite on 10.0.2, 10.1.5, 10.2.8,
+10.3.2, 10.4.3, and 10.5.1. Agents need Docker, passwordless sudo for fixture
+ownership, Python 3, curl/unzip/Git, and uv (pinned in `.tool-versions`).
+`.buildkite/test-runtime.py VERSION` owns one finite fixture/test lifecycle.
 
-Override `User Settings File` with the directory you copied above. 
+For the Bitbucket 9 control, use the unchanged published 3.0.1 JAR on 9.6.5;
+its SHA-256 is `5ed6887a33b0bacfe37943b50540f653dbc0c8846cffc4af3c0cbe93a41701de`.
+Pass `--plugin-version 3.0.1` to the runtime test. Do not try to run the Java
+21/Jakarta JAR on Bitbucket 9.
 
-The following commands are also useful for local development:
+Development fixtures use H2 and may persist Basic authentication as enabled even
+on Bitbucket 10. The test uses PATs, but for a production-like run also disable
+Basic auth in **Administration > Authentication methods**, confirm Basic returns
+403, and repeat the API checks. The runner explicitly keeps UPM signature
+verification enabled; copying a JAR into the initial home is not a signed-install
+test. Test upload through UPM separately. Single-node H2 tests do not certify
+cluster behavior, every supported database, or production scale.
 
-- `atlas-run` -- installs this plugin into the product and starts it on localhost (`--context-path /` will run it on [http://localhost:7990](http://localhost:7990) instead of [http://localhost:7990/bitbucket](http://localhost:7990/bitbucket))
-- `atlas-debug` -- same as atlas-run, but allows a debugger to attach at port 5005
-- `atlas-help` -- prints description for all commands in the SDK
+## Browser integration is a separate release
 
-See also the Atlassian Plugin SDK [documentation](https://developer.atlassian.com/display/DOCS/Introduction+to+the+Atlassian+Plugin+SDK).
+The JAR loads `/.assets/extension/scripts/integration.bundle.js` from the configured
+Sourcegraph instance. The Bitbucket adapter lives in `sourcegraph/sourcegraph`,
+under `client/browser/src/shared/code-hosts/bitbucket`. A new JAR cannot update
+that bundle. Verify source and PR views using a Sourcegraph release containing
+the adapter changes; do not infer the customer's bundle from this repository or
+from Sourcegraph master. Fixture/DOM tests alone do not prove code intelligence
+against a real Sourcegraph backend.
 
-The default credentials are `admin/admin` for the `atlas-run` environment.
+## Release without breaking Bitbucket 9
 
-## Attaching a debugger
+Repository pushes are not Marketplace releases or deployments. The historical
+release script only rotated GCS `latest.jar`; it never updated the POM, tagged a
+commit, published Marketplace metadata, or set compatibility bounds.
 
-As mentioned above, running `atlas-debug` will run in debug mode. In order to attach a debugger using IntelliJ follow these steps:
+Before publication, obtain explicit release authorization and confirm access to
+the Marketplace listing and (if used) the GCS bucket. Then:
 
-1. Run -> Debug -> Edit Configuration
-1. Click `+` and select `Remote`
-1. The default settings should work, just name it for example `Bitbucket`
-1. Run -> Debug, select the name you used above
-1. The console should say that it has attached and you can add breakpoints etc 
+1. Build and runtime-test the candidate from the release commit. Keep the JAR and
+   its SHA-256; do not rebuild between verification, signing, and publication.
+2. Run `./scripts/release.sh 4.0.0` to check the artifact version and checksum. This
+   is local-only. `--upload` explicitly uploads an immutable `4.0.0.jar` to GCS
+   using a generation precondition; it refuses to overwrite existing bytes.
+3. Leave existing `latest.jar` and the 3.0.1 Marketplace version intact for
+   Bitbucket 9. If archiving `3.0.1.jar`, copy the verified existing artifact;
+   never rebuild it from the Jakarta branch. Do not extend its bounds to 10.x.
+4. Submit a new **4.0.0** Data Center Marketplace version for app key
+   `com.sourcegraph.plugins.sourcegraph-bitbucket`, with a new unique build number
+   greater than 2010051. Set the Bitbucket minimum to the earliest verified
+   version (10.0.2) and maximum to the latest verified version (10.5.1); refresh
+   Atlassian's feeds before submission. Do not claim untested 10.0.0/10.0.1.
+5. Marketplace signs distributed artifacts. For direct upload, use a separately
+   approved vendor signing identity and distribute the detached signature and
+   certificate via a trusted channel. The customer must configure UPM's trust
+   store. Do not tell customers to disable signature verification.
+6. Download the published artifact, compare its digest, check Marketplace bounds,
+   install through UPM with signature verification enabled, and record the
+   Sourcegraph release containing the frontend fix. Tagging and publishing are
+   explicit release actions, not consequences of packaging or a master push.
 
-# Releasing
+For a disposable signing test, generate an Ed25519 key/certificate with codeSigning
+usage, place the public certificate in `<Bitbucket shared home>/upmconfig/truststore`
+(owned by a different user and not writable by Bitbucket), and sign the exact JAR
+using `openssl pkeyutl -sign -rawin`. Base64-encode the signature. UPM's multipart
+upload takes `plugin=@app.jar` and a `signature` field containing JSON
+`{"signature":"<base64>"}`. Authenticate with a WebSudo-confirmed admin session,
+obtain `upm-token` from `GET /rest/plugins/1.0/`, then upload. Parse the textarea-wrapped
+response and follow the asynchronous task to completion; also verify plugin and
+module activation. Check rejection of absent/wrong signatures as negative controls.
+Test keys are not release credentials.
 
-To release a version of the plugin, run `./scripts/release.sh <CURRENT VERSION> <NEW VERSION>`. This script uploads a new version of the plugin jar to google cloud. There are two requirements for this script to work being: (1) atlassian sdk installed and (2) gcloud cli set up with the sourcegraph-dev project.
-
-```
-./scripts/release.sh 1.1.0 1.2.0
-```
-
-The new version should be the one specified in `pom.xml`.
+References: [Bitbucket API changelog](https://developer.atlassian.com/server/bitbucket/reference/api-changelog/),
+[UPM signing configuration](https://confluence.atlassian.com/upm/configuring-upm-app-signature-check-1489470544.html),
+[custom signatures](https://confluence.atlassian.com/upm/generating-app-signature-and-verification-certificate-using-openssl-1489470549.html).

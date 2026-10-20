@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Build prerequisites only. Runtime fixtures are downloaded on demand, not baked
+# into snapshots with their development license and credentials.
+if ! command -v mvn >/dev/null; then
+    sudo apt-get update -qq
+    sudo apt-get install -y -qq maven
+fi
+
+jdk=/opt/sourcegraph-jdk-21.0.12.1
+if [[ ! -x "$jdk/bin/java" ]]; then
+    archive=$(mktemp)
+    trap 'rm -f "$archive"' EXIT
+    curl -fsSL --retry 3 'https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.12.1%2B1/OpenJDK21U-jdk_x64_linux_hotspot_21.0.12.1_1.tar.gz' -o "$archive"
+    echo "ce79869e1307ed8ee1e2baa86a412b1eb5b75d10a01006d788a6f968bcfaee94  $archive" | sha256sum --check
+    sudo mkdir -p "$jdk"
+    sudo tar xzf "$archive" -C "$jdk" --strip-components=1
+fi
+for tool in java javac jar; do
+    sudo update-alternatives --install "/usr/bin/$tool" "$tool" "$jdk/bin/$tool" 2100
+    sudo update-alternatives --set "$tool" "$jdk/bin/$tool"
+done
+printf 'export JAVA_HOME=%s\nexport PATH="$JAVA_HOME/bin:$PATH"\n' "$jdk" | sudo tee /etc/profile.d/sourcegraph-java.sh >/dev/null
+export JAVA_HOME="$jdk"
+export PATH="$JAVA_HOME/bin:$PATH"
+mvn --version
+
+# Warm Maven's cache; Atlassian dependencies can take several minutes cold.
+mvn -B -ntp package
