@@ -12,7 +12,7 @@ import com.atlassian.event.api.EventListener;
 import com.sourcegraph.webhook.registry.Webhook;
 import com.sourcegraph.webhook.registry.WebhookRegistry;
 
-import javax.inject.Named;
+import jakarta.inject.Named;
 import java.util.ArrayList;
 import java.util.List;
 

@@ -5,7 +5,7 @@
 
     <groupId>com.sourcegraph.plugins</groupId>
     <artifactId>sourcegraph-bitbucket</artifactId>
-    <version>3.0.1</version>
+    <version>4.0.0</version>
     <packaging>atlassian-plugin</packaging>
 
     <name>Sourcegraph for Bitbucket Server</name>
@@ -19,16 +19,16 @@
     </organization>
 
     <properties>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
         <jvm17.opens />
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <amps.version>9.1.3</amps.version>
-        <bitbucket.version>9.2.0</bitbucket.version>
-        <platform.version>7.2.3</platform.version>
-        <atlassian.spring.scanner.version>5.1.0</atlassian.spring.scanner.version>
+        <bitbucket.version>10.5.1</bitbucket.version>
+        <platform.version>8.3.33</platform.version>
+        <atlassian.spring.scanner.version>6.0.2</atlassian.spring.scanner.version>
 
         <!-- This property ensures consistency between the key in atlassian-plugin.xml and the OSGi bundle's key. -->
         <atlassian.plugin.key>${project.groupId}.${project.artifactId}</atlassian.plugin.key>
@@ -84,7 +84,7 @@
         <dependency>
             <groupId>com.atlassian.activeobjects</groupId>
             <artifactId>activeobjects-plugin</artifactId>
-            <version>6.0.0-m03</version>
+            <version>7.0.14</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -95,14 +95,14 @@
         </dependency>
         <dependency>
             <groupId>com.atlassian.bitbucket.server</groupId>
-            <artifactId>bitbucket-rest-api</artifactId>
-            <version>9.0.0-plat-7-m20</version>
+            <artifactId>bitbucket-rest-v2-api</artifactId>
+            <version>${bitbucket.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.atlassian.bitbucket.server</groupId>
-            <artifactId>bitbucket-rest-model</artifactId>
-            <version>9.0.0-plat-7-m20</version>
+            <artifactId>bitbucket-rest-v2-model</artifactId>
+            <version>${bitbucket.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -216,6 +216,7 @@
                         <Import-Package>
                             !sun.misc,
                             com.atlassian.plugin.osgi.bridge.external,
+                            jakarta.servlet,
                             *;resolution:=optional
                         </Import-Package>
                         <Spring-Context>*</Spring-Context>
