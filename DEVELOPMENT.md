@@ -82,6 +82,16 @@ the adapter changes; do not infer the customer's bundle from this repository or
 from Sourcegraph master. Fixture/DOM tests alone do not prove code intelligence
 against a real Sourcegraph backend.
 
+The October 2026 verification used real SCIP indexes on Sourcegraph 6.12.0 with
+the updated integration bundle against Bitbucket 9.6.5 and 10.5.1. Source/PR
+hovers, unequal diff sides, history/branch switching, and native text selection
+were exercised. This mixed-version setup is **not** a supported upgrade: current
+Sourcegraph uses `/r/` repository routes, which 6.12.0 does not serve. A definition
+click returned 404; a references click opened the file but did not prove the
+references panel. Validate navigation again on a matching Sourcegraph server and
+bundle before release. Older native Git HTTP also requires the bearer-token fix
+or the connector's supported SSH configuration when Bitbucket disables Basic auth.
+
 ## Release without breaking Bitbucket 9
 
 Repository pushes are not Marketplace releases or deployments. The historical
