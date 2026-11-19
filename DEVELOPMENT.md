@@ -98,6 +98,12 @@ the connector's supported SSH configuration when Bitbucket disables Basic auth.
 Published on November 19, 2026 as Marketplace build **2010071**, Paid via Vendor,
 for Bitbucket Data Center **10.0.2–10.5.2**:
 
+`master` is the Bitbucket 10 / Java 21 / Jakarta line. Maintain Bitbucket 9 /
+Java 17 / `javax` patches on the separate
+[`3.x` branch](https://github.com/sourcegraph/bitbucket-server-plugin/tree/3.x).
+Its published 3.0.2 release fixes CVE-2026-102554; GCS `latest.jar` and
+`3.0.2.jar` serve that release, while `3.0.1.jar` archives the previous one.
+
 - [Marketplace version](https://marketplace.atlassian.com/apps/1231975/sourcegraph-for-bitbucket/version-history#b2010071)
 - [Published JAR](https://marketplace.atlassian.com/download/apps/1231975/version/2010071)
 - Build source: [`667c44b436d4d59af47adcd897304acac24abc10`](https://github.com/sourcegraph/bitbucket-server-plugin/commit/667c44b436d4d59af47adcd897304acac24abc10), Java 21, `mvn -B -ntp clean verify`.
@@ -125,9 +131,10 @@ for post-publication testing. On November 19, the published JAR passed:
   fixture package identities prevented cross-host symbol attribution. Private
   bearer-token cloning also passed on both Bitbucket 10 integration fixtures
   with Basic blocked; incorrect credentials failed.
-- **16/16 Bitbucket 9 control checks** on freshly installed public 3.0.1. Its
-  Marketplace bytes and GCS `latest.jar` still matched the checksum above in
-  the runtime-test section. UPM 7.1.9 on this control does not enforce signatures.
+- **16/16 Bitbucket 9 control checks** on freshly installed public 3.0.1. At
+  test time, Marketplace 3.0.1 and GCS `latest.jar` matched the checksum above
+  in the runtime-test section; `latest.jar` now serves 3.0.2. UPM 7.1.9 on
+  this control does not enforce signatures.
 
 These were single-node H2 Docker fixtures, with simulated major-version upgrades,
 not cluster, production-database or performance certification. Sourcegraph ran
@@ -152,9 +159,9 @@ the Marketplace listing and (if used) the GCS bucket. Then:
 2. Run `./scripts/release.sh 4.0.0` to check the artifact version and checksum. This
    is local-only. `--upload` explicitly uploads an immutable `4.0.0.jar` to GCS
    using a generation precondition; it refuses to overwrite existing bytes.
-3. Leave existing `latest.jar` and the 3.0.1 Marketplace version intact for
-   Bitbucket 9. If archiving `3.0.1.jar`, copy the verified existing artifact;
-   never rebuild it from the Jakarta branch. Do not extend its bounds to 10.x.
+3. Leave `latest.jar` on the Bitbucket 9-compatible 3.x line and keep the
+   3.0.1 Marketplace version and GCS `3.0.1.jar` archive intact. Never rebuild
+   a 3.x JAR from the Jakarta branch or extend its bounds to 10.x.
 4. Submit a new Data Center Marketplace version for app key
    `com.sourcegraph.plugins.sourcegraph-bitbucket`, with a new unique build number
    greater than the latest existing build (4.0.0 uses 2010071). Set the Bitbucket

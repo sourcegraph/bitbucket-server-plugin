@@ -8,8 +8,12 @@ The plugin also has the optional functionality to enable **faster ACL permission
 
 ### Compatibility
 
-- **Bitbucket Data Center 9:** use plugin **3.0.1**. The existing GCS `latest.jar`
-  remains this artifact; Marketplace currently advertises 9.0.0–9.6.5.
+- **Bitbucket Data Center 9.0.0–9.6.5:** use the published
+  [plugin **3.0.2**](https://marketplace.atlassian.com/download/apps/1231975/version/2010081)
+  security update. GCS `latest.jar` and `3.0.2.jar` serve the same verified bytes;
+  `3.0.1.jar` preserves the previous release. Maintain 3.x on the
+  [`3.x` branch](https://github.com/sourcegraph/bitbucket-server-plugin/tree/3.x),
+  not `master`.
 - **Bitbucket Data Center 10.0.2–10.5.2:** use the published
   [plugin **4.0.0**](https://marketplace.atlassian.com/apps/1231975/sourcegraph-for-bitbucket/version-history#b2010071),
   which uses Java 21 and Jakarta and requires **Sourcegraph 8.2.0 or later**.
@@ -62,6 +66,10 @@ UPM signature verification by default; do not disable it to install this plugin.
 ```
 https://storage.googleapis.com/sourcegraph-for-bitbucket-server/latest.jar
 ```
+
+This URL serves plugin 3.0.2 for Bitbucket 9. For Bitbucket 10, install 4.0.0
+through Marketplace; the GCS `4.0.0.jar` archive is not a signed direct-install
+alternative without a separately approved signature and trusted certificate.
 
 ### Updating
 
