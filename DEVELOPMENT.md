@@ -41,11 +41,13 @@ sudo rm -rf /tmp/bitbucket-test # only the disposable home created above
 Outside an orb, run the fixture command in one terminal and the test in another.
 The test waits for `RUNNING`, authenticates via browser-session login and bearer
 PATs, checks config authorization and exact Roaring bitmap/native API parity for
-read/write/admin access, and creates a real Git push and PR comment to verify
-webhook payloads and independently computed HMAC signatures. It also checks
+read/write/admin access, and creates real Git pushes, build statuses and PR
+comments in two projects to verify webhook payloads, independently computed HMAC
+signatures, and global, project and repository scopes (including no delivery to a
+webhook scoped to another repository). It also checks
 anonymous/non-admin denials, identity isolation, error boundaries, and deletion.
 Run once per fresh home; it intentionally leaves its test users and repositories
-in that disposable home. `--keep-hook` retains the webhook for restart checks.
+in that disposable home. `--keep-hook` retains the webhooks for restart checks.
 
 The webhook receiver defaults to Docker's Linux bridge (`172.17.0.1:8765`). Pass
 `--sink-port` and `--sink-url` for another bridge or concurrent runs. It listens on

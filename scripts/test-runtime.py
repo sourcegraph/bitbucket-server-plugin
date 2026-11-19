@@ -146,7 +146,7 @@ def run(args):
     class Sink(BaseHTTPRequestHandler):
         def do_POST(self):
             body = self.rfile.read(int(self.headers["Content-Length"]))
-            events.put((self.headers["X-Event-Key"], self.headers["X-Hub-Signature"], body))
+            events.put((self.headers["X-Hook-Name"], self.headers["X-Event-Key"], self.headers["X-Hub-Signature"], body))
             self.send_response(204)
             self.end_headers()
 
@@ -157,48 +157,115 @@ def run(args):
     thread = threading.Thread(target=sink.serve_forever, daemon=True)
     thread.start()
     try:
-        hook = {"name": "runtime-test", "scope": "global", "events": ["repo:refs_changed", "pr:activity:comment"],
-                "endpoint": args.sink_url, "secret": secret}
-        request(bearer, "POST", API + "/webhook", status=204, json=hook)
-        with tempfile.TemporaryDirectory() as checkout:
-            # Avoid putting the token into git arguments, logs, or persistent config.
-            env = dict(os.environ, GIT_CONFIG_COUNT="1", GIT_CONFIG_KEY_0="http.extraHeader",
-                       GIT_CONFIG_VALUE_0="Authorization: " + bearer.headers["Authorization"])
+        # One global hook plus scoped hooks. "runtime-other" is scoped to a
+        # repository in another project and must only see that repository.
+        # Scoped hooks avoid pr:event: one of its payloads omits pullRequest,
+        # so its repository cannot be checked.
+        sourcegraph = ["repo:refs_changed", "repo:build_status", "pr:activity", "pr:participant:status"]
+        hooks = {
+            "runtime-test": ("global", ["repo:refs_changed", "repo:build_status", "pr:activity:comment"]),
+            "runtime-project": ("project:Project 1", ["repo", "pr:activity"]),
+            "runtime-repository": ("repository:PROJECT_1/rep_1", sourcegraph),
+            "runtime-other": ("repository:SGTEST/allowed", sourcegraph),
+        }
+        if args.plugin_version.startswith("3."):
+            # The published 3.x control predates the scope fix; check global delivery only.
+            hooks = {"runtime-test": hooks["runtime-test"]}
+        for name, (scope, keys) in hooks.items():
+            request(bearer, "POST", API + "/webhook", status=204, json={
+                "name": name, "scope": scope, "events": keys, "endpoint": args.sink_url, "secret": secret})
+        listed = {hook["name"]: hook for hook in request(bearer, "GET", API + "/webhook").json()}
+        assert set(listed) == set(hooks), listed
+        # Avoid putting the token into git arguments, logs, or persistent config.
+        env = dict(os.environ, GIT_CONFIG_COUNT="1", GIT_CONFIG_KEY_0="http.extraHeader",
+                   GIT_CONFIG_VALUE_0="Authorization: " + bearer.headers["Authorization"])
 
-            def git(*command):
-                subprocess.run(["git", "-C", checkout, *command], env=env, check=True,
-                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        def push(project, slug, empty):
+            """Pushes a commit on a new branch (and master first if empty); returns the branch head."""
+            with tempfile.TemporaryDirectory() as checkout:
+                def git(*command):
+                    return subprocess.run(["git", "-C", checkout, *command], env=env, check=True, text=True,
+                                          stdout=subprocess.PIPE, stderr=subprocess.DEVNULL).stdout.strip()
 
-            git("clone", BASE + "/scm/project_1/rep_1.git", ".")
-            git("checkout", "-b", "sourcegraph-runtime-test")
-            git("config", "user.name", "Runtime test")
-            git("config", "user.email", "runtime@example.test")
-            Path(checkout, "sourcegraph-runtime.txt").write_text("A real push exercises the packaged event listener.\n")
-            git("add", ".")
-            git("commit", "-m", "Exercise Sourcegraph webhook delivery")
-            git("push", "origin", "HEAD")
-        ref = {"repository": {"slug": "rep_1", "project": {"key": "PROJECT_1"}}}
-        pr = request(bearer, "POST", "/rest/api/latest/projects/PROJECT_1/repos/rep_1/pull-requests", status=201, json={
-            "title": "Sourcegraph runtime test", "fromRef": dict(ref, id="refs/heads/sourcegraph-runtime-test"),
-            "toRef": dict(ref, id="refs/heads/master")
-        }).json()
-        request(bearer, "POST", f'/rest/api/latest/projects/PROJECT_1/repos/rep_1/pull-requests/{pr["id"]}/comments',
-                status=201, json={"text": "Exercise signed PR comment webhook"})
-        expected = {"repo:refs_changed", "pr:activity:comment"}
-        deadline = time.monotonic() + 60
-        while expected and time.monotonic() < deadline:
-            key, signature, body = events.get(timeout=60)
-            assert hmac.compare_digest(signature, "sha256=" + hmac.new(secret.encode(), body, hashlib.sha256).hexdigest())
-            payload = json.loads(body)
+                git("clone", f"{BASE}/scm/{project.lower()}/{slug}.git", ".")
+                git("config", "user.name", "Runtime test")
+                git("config", "user.email", "runtime@example.test")
+                if empty:
+                    git("checkout", "-b", "master")
+                    git("commit", "--allow-empty", "-m", "Initial commit")
+                    git("push", "origin", "HEAD:refs/heads/master")
+                git("checkout", "-b", "sourcegraph-runtime-test")
+                Path(checkout, "sourcegraph-runtime.txt").write_text("A real push exercises the packaged event listener.\n")
+                git("add", ".")
+                git("commit", "-m", "Exercise Sourcegraph webhook delivery")
+                git("push", "origin", "HEAD")
+                return git("rev-parse", "HEAD")
+
+        def exercise(project, slug, empty):
+            commit = push(project, slug, empty)
+            repo = f"/rest/api/latest/projects/{project}/repos/{slug}"
+            request(bearer, "POST", f"{repo}/commits/{commit}/builds", status=204, json={
+                "key": "sourcegraph-runtime-test", "state": "SUCCESSFUL", "url": "https://ci.example.test/1"})
+            ref = {"repository": {"slug": slug, "project": {"key": project}}}
+            pr = request(bearer, "POST", f"{repo}/pull-requests", status=201, json={
+                "title": "Sourcegraph runtime test", "fromRef": dict(ref, id="refs/heads/sourcegraph-runtime-test"),
+                "toRef": dict(ref, id="refs/heads/master")
+            }).json()
+            request(bearer, "POST", f'{repo}/pull-requests/{pr["id"]}/comments',
+                    status=201, json={"text": "Exercise signed PR comment webhook"})
+            return commit, pr["id"]
+
+        rep_1, other = 1, allowed
+        commits, prs = {}, {}
+        for repo_id, project, slug, empty in [(rep_1, "PROJECT_1", "rep_1", False), (other, "SGTEST", "allowed", True)]:
+            commit, prs[repo_id] = exercise(project, slug, empty)
+            commits[commit] = repo_id
+
+        def repository_of(key, payload):
             if key == "repo:refs_changed":
-                assert payload["repository"]["id"] == 1
-            if key == "pr:activity:comment":
-                assert payload["pullRequest"]["id"] == pr["id"]
-            expected.discard(key)
-        assert not expected, expected
-        print("PASS real git push and PR comment webhooks, payload IDs and independent HMAC", flush=True)
+                return payload["repository"]["id"]
+            if key == "repo:build_status":
+                return commits[payload["commit"]]
+            repo_id = payload["pullRequest"]["toRef"]["repository"]["id"]
+            assert payload["pullRequest"]["id"] == prs[repo_id], payload["pullRequest"]["id"]
+            return repo_id
+
+        core = ["repo:refs_changed", "repo:build_status", "pr:activity:comment"]
+        scoped = core + ["pr:activity:event"]  # PR opened
+        required = {
+            "runtime-test": {(key, repo) for key in core for repo in [rep_1, other]},
+            "runtime-project": {(key, rep_1) for key in scoped},
+            "runtime-repository": {(key, rep_1) for key in scoped},
+            "runtime-other": {(key, other) for key in scoped},
+        }
+        allowed_repos = {"runtime-test": {rep_1, other}, "runtime-project": {rep_1},
+                         "runtime-repository": {rep_1}, "runtime-other": {other}}
+        received = {name: set() for name in hooks}
+        deadline = time.monotonic() + 60
+        settle = None
+        while time.monotonic() < (settle or deadline):
+            try:
+                name, key, signature, body = events.get(timeout=1)
+            except queue.Empty:
+                if settle is None and all(required[n] <= received[n] for n in hooks):
+                    settle = time.monotonic() + 10  # wait for any wrongly scoped stragglers
+                continue
+            assert hmac.compare_digest(signature, "sha256=" + hmac.new(secret.encode(), body, hashlib.sha256).hexdigest())
+            if key == "ping":
+                continue
+            assert any(key == event or key.startswith(event + ":") for event in hooks[name][1]), (name, key)
+            received[name].add((key, repository_of(key, json.loads(body))))
+        names = {rep_1: "PROJECT_1/rep_1", other: "SGTEST/allowed"}
+        for name in hooks:
+            print(f"  {name} ({hooks[name][0]}): " + ", ".join(sorted(f"{k}@{names[r]}" for k, r in received[name])), flush=True)
+        for name in hooks:
+            assert required[name] <= received[name], (name, "missing", required[name] - received[name])
+            assert {repo for _, repo in received[name]} <= allowed_repos[name], (name, "out of scope", received[name])
+        print("PASS real git push, build status and PR comment webhooks: payload IDs, independent HMAC, "
+              "global/project/repository scopes, no delivery outside scope", flush=True)
         if not args.keep_hook:
-            request(bearer, "DELETE", API + "/webhook", status=204, data={"name": "runtime-test"})
+            for name in hooks:
+                request(bearer, "DELETE", API + "/webhook", status=204, data={"name": name})
             assert request(bearer, "GET", API + "/webhook").json() == []
             print("PASS webhook deletion", flush=True)
     finally:
