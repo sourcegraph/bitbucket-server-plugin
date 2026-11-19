@@ -2,6 +2,7 @@ package com.sourcegraph.webhook;
 
 import com.atlassian.bitbucket.build.status.RepositoryBuildStatusSetEvent;
 import com.atlassian.bitbucket.event.ApplicationEvent;
+import com.atlassian.bitbucket.event.CancelableEvent;
 import com.atlassian.bitbucket.event.pull.*;
 import com.atlassian.bitbucket.event.repository.RepositoryPushEvent;
 import com.atlassian.bitbucket.pull.PullRequestAction;
@@ -38,6 +39,12 @@ public class WebhookListener {
 
     @EventListener
     public void onPullRequestEvent(PullRequestEvent event) {
+        // Requested events fire before the action and may be canceled; an open
+        // request has no pull request to render yet. Send the outcome only.
+        if (event instanceof CancelableEvent) {
+            return;
+        }
+
         String key = "pr:event";
 
         // When review status changes, two events are fired in in all cases apart from
