@@ -46,18 +46,12 @@ public class WebhookRegistry {
 
     public static List<Webhook> getWebhooks(List<String> keys, Repository repository) {
         String params = Joiner.on(", ").join(Collections.nCopies(keys.size(), "?"));
-        Iterable<Object> args = Iterables.concat(keys);
-
-        String where = "event.EVENT in (" + params + ")";
-        if (repository != null) {
-            where += " AND (webhook.SCOPE = \'global\' "
-                    + "OR (webhook.SCOPE = CONCAT(\'project\', ':',  ?)) "
-                    + "OR (webhook.SCOPE = CONCAT(\'repository\', ':', ?)))";
-            args = Iterables.concat(args, Arrays.asList(
-                    repository.getProject().getName(),
-                    repository.getName()
-            ));
-        }
+        // Scopes are stored by ID (see resolveScopeID), so match against IDs too.
+        String where = "event.EVENT in (" + params + ") AND webhook.SCOPE in ('global', ?, ?)";
+        Iterable<Object> args = Iterables.concat(keys, Arrays.asList(
+                "project:" + repository.getProject().getId(),
+                "repository:" + repository.getId()
+        ));
 
         Query query = Query.select()
                 .order("ID ASC")

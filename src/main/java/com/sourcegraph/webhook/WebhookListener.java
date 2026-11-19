@@ -77,16 +77,12 @@ public class WebhookListener {
 
     @EventListener
     public void onRepositoryBuildStatusSetEvent(RepositoryBuildStatusSetEvent event) {
-        handle(event, "repo:build_status");
+        handle(event, "repo:build_status", event.getBuildStatus().getRepository());
     }
 
     @EventListener
     public void onRepositoryPushEvent(RepositoryPushEvent event) {
-        handle(event, "repo:refs_changed");
-    }
-
-    public void handle(ApplicationEvent event, String key) {
-        handle(event, key, null);
+        handle(event, "repo:refs_changed", event.getRepository());
     }
 
     private void handle(ApplicationEvent event, String key, Repository repository) {
