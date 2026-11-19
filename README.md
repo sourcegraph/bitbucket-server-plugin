@@ -38,7 +38,7 @@ The plugin also has the optional functionality to enable **faster ACL permission
 https://marketplace.atlassian.com/download/apps/1231975/version/2010081
 ```
 
-This is the Marketplace-hosted 3.0.2 security update for Bitbucket Data Center 9.0.0–9.6.5. It updates Guava for CVE-2026-102554 and can upgrade an existing 3.0.1 installation without removing its Sourcegraph settings or webhooks. The GCS `latest.jar` URL still serves 3.0.1; do not use it to install this update. For Bitbucket 10, use plugin 4.0.0 instead.
+This is the Marketplace-hosted 3.0.2 security update for Bitbucket Data Center 9.0.0–9.6.5. It updates Guava for CVE-2026-102554 and can upgrade an existing 3.0.1 installation without removing its Sourcegraph settings or webhooks. The GCS `latest.jar` URL also serves 3.0.2; versioned GCS archives are available at `3.0.1.jar` and `3.0.2.jar`. For Bitbucket 10, install plugin 4.0.0 through Marketplace (a versioned GCS `4.0.0.jar` is archived, but direct upload requires a separately approved signature and trusted certificate). Never use `latest.jar` for Bitbucket 10.
 
 ### Updating
 
