@@ -107,25 +107,29 @@ After installing the Sourcegraph for Bitbucket Server, you need to configure it 
 
 #### Native code intelligence
 
-Once configured, Sourcegraph for Bitbucket Server will add code intelligence hovers to code views and pull requests for all users that are logged in to your self-hosted Sourcegraph instance. It will also add links to view repositories, files and diffs on Sourcegraph.
+Once configured, Sourcegraph for Bitbucket Server adds code intelligence hovers (with **Go to definition** and **Find references**) to code views and pull requests for all users that are logged in to your self-hosted Sourcegraph instance. It also adds links to view repositories, files and diffs on Sourcegraph.
 
 <img src="img/code-intelligence.png" alt="Code intelligence" width="400px"/>
 
-Additionally, activated [Sourcegraph extensions](https://docs.sourcegraph.com/extensions) will be able to add information to Bitbucket server code views and pull requests, such as test coverage data or trace/log information.
+The plugin loads this integration from your Sourcegraph instance, so it changes when you upgrade Sourcegraph, not when you upgrade the plugin.
 
-If a user is not logged in to Sourcegraph, they will still see the "View Repository on Sourcegraph" links, but code intelligence hovers as well as any data contributed by Sourcegraph extensions will not be displayed.
+If a user is not logged in to Sourcegraph, they will still see the "View Repository on Sourcegraph" links, but code intelligence hovers will not be displayed.
 
 #### Webhooks
 
-Go to **Administration > Add-ons > Sourcegraph** to see a list of all configured webhooks and to create a new one.
+The plugin sends webhooks that can be scoped globally, to a project, or to a repository, instead of Bitbucket's per-repository webhooks. Sourcegraph uses them to update repositories after pushes and to keep [Batch Changes](https://sourcegraph.com/docs/batch-changes) changesets current.
 
-[See the `webhooks/README.md`](https://github.com/sourcegraph/bitbucket-server-plugin/tree/master/src/main/java/com/sourcegraph/webhook) for more details.
+1. In Sourcegraph, create an incoming webhook for your Bitbucket Server code host connection (see [Incoming webhooks](https://sourcegraph.com/docs/admin/webhooks/incoming#bitbucket-server)).
+2. In Bitbucket, go to **Administration > Add-ons > Sourcegraph** and add a webhook with scope `global`, the incoming webhook's URL as the endpoint, and its secret.
+3. Subscribe to `repo:refs_changed` for repository updates and, for Batch Changes, `repo:build_status`, `pr:activity`, and `pr:participant:status`.
+
+[See the `webhooks/README.md`](https://github.com/sourcegraph/bitbucket-server-plugin/tree/master/src/main/java/com/sourcegraph/webhook) for the event names, payloads, and REST API.
 
 #### Faster permissions fetching
 
-Sourcegraph for Bitbucket Server adds two REST endpoints to provide more efficient endpoints for fetching permissions data:
+When the Bitbucket Server code host connection sets `"plugin": {"permissions": "enabled"}`, Sourcegraph fetches repository permissions from the plugin instead of paging through Bitbucket's REST API (see [Fast permission syncing](https://sourcegraph.com/docs/admin/code_hosts/bitbucket_server#fast-permission-syncing)). The plugin adds two endpoints under `/rest/sourcegraph-admin/1.0`:
 
-- `/permissions/repositories?user=<USERNAME>&permission=<PERMISSION_LEVEL>`<br /> Returns **a list of repository IDs** the given `user` has access to on the given `permission` level.
-- `/permissions/users?repository=<REPO>&permission=<PERMISSION_LEVEL>`<br /> Returns **a list of user IDs** that have access to the given `repository` on the given `permission` level.
+- `/permissions/repositories?permission=<PERMISSION_LEVEL>`<br /> Returns **a list of repository IDs** the authenticated user has access to on the given `permission` level. Sourcegraph calls this endpoint.
+- `/permissions/users?repository=<PROJECT_KEY>/<REPO_SLUG>&permission=<PERMISSION_LEVEL>`<br /> Returns **a list of user IDs** that have access to the given repository on the given `permission` level. Requires a system admin.
 
-The lists returned by both endpoints are encoded as [Roaring Bitmaps](https://roaringbitmap.org/).
+`PERMISSION_LEVEL` is `read`, `write`, or `admin`. The lists returned by both endpoints are encoded as [Roaring Bitmaps](https://roaringbitmap.org/).

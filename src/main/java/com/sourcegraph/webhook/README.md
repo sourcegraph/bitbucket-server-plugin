@@ -1,18 +1,37 @@
 # Webhooks
 
-The Sourcegraph Bitbucket Server plugin provides an implementation for webhooks that supports listening to events at a global or project scope.
+The Sourcegraph Bitbucket Server plugin provides an implementation for webhooks that supports listening to events at a global, project, or repository scope. To send them to Sourcegraph, follow [Incoming webhooks](https://sourcegraph.com/docs/admin/webhooks/incoming#bitbucket-server).
 
 ## Contents
 
+- [Events](#events)
 - [Payload](#payload)
 - [REST API](#rest-api)
     * [List](#list)
     * [Create](#create)
     * [Delete](#delete)
 
+## Events
+
+The plugin sends these event keys in the `X-Event-Key` header:
+
+| Event key | Sent for | Used by Sourcegraph |
+| --- | --- | --- |
+| `repo:refs_changed` | Pushes | Repository updates |
+| `repo:build_status` | Build statuses set on a commit | Batch Changes |
+| `pr:activity:event` | Pull request activity without a more specific key below, such as opening, reviews, or declining | Batch Changes |
+| `pr:activity:rescope` | New commits on a pull request | Batch Changes |
+| `pr:activity:merge` | Merged pull requests | Batch Changes |
+| `pr:activity:comment` | Pull request comments | Batch Changes |
+| `pr:activity:reviewers` | Reviewer changes | Batch Changes |
+| `pr:participant:status` | A reviewer moving from Needs work to Unapproved, which has no activity event | Batch Changes |
+| `pr:event` | Other pull request events | No |
+
+A webhook subscribes to an event key or to any prefix of it: `pr:activity` matches every `pr:activity:*` key, and `repo` matches both `repo:*` keys. Avoid subscribing a Sourcegraph endpoint to `pr`, which also sends `pr:event`; Sourcegraph rejects that key.
+
 ## Payload
 
-The event payload HTTP POST request is sent when an event is fired. In the case that the request fails, there will be four further attempts with an interval of 10 seconds before it stops trying. The outcomes of these requests are recorded in the logs.
+The event payload HTTP POST request is sent when an event is fired. In the case that the request fails, it is retried up to four more times, after 20 seconds, 1 minute, 2 minutes, and 5 minutes. The outcomes of these requests are recorded in the logs and the last error is shown on the plugin's admin page.
 
 Each request has the following headers:
 
@@ -20,10 +39,11 @@ Each request has the following headers:
 - `X-Hook-ID` - The ID that represents the webhook
 - `X-Hook-Name` - The name of the webhook that sends the request
 - `X-Hub-Signature` - HMAC SHA256 hash of the payload (request body)
+- `X-Attempt-Number` - The delivery attempt, starting at 1
 
 The payload is sent in the request body as a JSON object. Each payload follows the schema specified in [Event Payload](https://confluence.atlassian.com/bitbucketserver0516/event-payload-966061436.html?utm_campaign=in-app-help&utm_medium=in-app-help&utm_source=stash#Eventpayload-repositoryevents) and [Bitbucket Entities](https://docs.atlassian.com/bitbucket-server/docs/5.16.0/reference/javascript/JSON.html).
 
-Here is an example payload for the event `pr:opened`:
+Here is an example payload from an earlier plugin version, sent when a pull request was opened (the plugin now sends this as `pr:activity:event`):
 
 ```
 2019/11/20 22:31:54 POST / HTTP/1.1                             
@@ -156,7 +176,7 @@ Output: JSON serialized `[]Webhook`
     "id": "1",
     "name": "webhook",
     "scope": "global",
-    "events": ["pr"],
+    "events": ["repo:refs_changed", "pr:activity"],
     "endpoint": "https://${SOURCEGRAPH_URL}/.api/webhooks/54104dbb-0b71-4a83-aa6b-eef46241614a",
     "secret": "secret"
 }]
@@ -167,7 +187,7 @@ Output: JSON serialized `[]Webhook`
 ```bash
 $ curl -X POST 'https://${BITBUCKET_SERVER_URL}/rest/sourcegraph-admin/1.0/webhook' \
     -H 'Content-Type: application/json' \
-    -d '{"name":"sourcegraph-webhook", "scope":"global", "events":["pr"], "endpoint":"https://sourcegraph.example.com/.api/bitbucket-server-webhooks", "secret":"verylongsecret"}'
+    -d '{"name":"sourcegraph-webhook", "scope":"global", "events":["repo:refs_changed","repo:build_status","pr:activity","pr:participant:status"], "endpoint":"https://sourcegraph.example.com/.api/webhooks/54104dbb-0b71-4a83-aa6b-eef46241614a", "secret":"verylongsecret"}'
 ```
 
 There will be a 204 response code if successful.  
@@ -175,16 +195,14 @@ There will be a 204 response code if successful.
 **JSON Fields:**
 
 - name - string id for webhook
-- scope - can be either `global`, `project:<project name>`, or `repository:<project key>/<repository name>`
-- events - list of events; events can be: `pr`, `pr:opened`, `pr:modified`, `pr:reviewer`, `pr:reviewer:updated`, `pr:reviewer:approved`, `pr:reviewer:unapproved`, `pr:reviewer:needs_work`, `pr:merged`, `pr:declined`, `pr:deleted`, `pr:comment`, `pr:comment:added`, `pr:comment:edited`, `pr:comment:deleted`
+- scope - can be either `global`, `project:<project name>`, or `repository:<project key>/<repository slug>`
+- events - list of [event keys](#events) or prefixes of them
 - endpoint - url that the event payload will be sent to
 - secret - key to sign payload request with
 
 Error codes:
 `404` - No such project or repository  
 `422` - Invalid scope
-
-NOTE: More events can be added in the future. These are just the currently supported ones.
 
 ### Delete
 
