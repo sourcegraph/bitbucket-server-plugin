@@ -1,5 +1,6 @@
 package com.sourcegraph.webhook;
 
+import com.atlassian.bitbucket.build.status.RepositoryBuildStatus;
 import com.atlassian.bitbucket.build.status.RepositoryBuildStatusSetEvent;
 import com.atlassian.bitbucket.event.ApplicationEvent;
 import com.atlassian.bitbucket.event.pull.PullRequestActivityEvent;
@@ -45,8 +46,18 @@ public class EventSerializer {
     }
 
     private static Adapter<RepositoryBuildStatusSetEvent> RepositoryBuildStatusSetEventAdapter = ((element, event) -> {
-        element.addProperty("commit", event.getBuildStatus().getCommitId());
-        element.add("status", render(event.getBuildStatus()));
+        RepositoryBuildStatus buildStatus = event.getBuildStatus();
+        element.addProperty("commit", buildStatus.getCommitId());
+        // JsonRenderer cannot render RepositoryBuildStatus, so build Bitbucket's
+        // REST build status shape, which Sourcegraph reads, by hand.
+        JsonObject status = new JsonObject();
+        status.addProperty("state", buildStatus.getState().name());
+        status.addProperty("key", buildStatus.getKey());
+        status.addProperty("name", buildStatus.getName().orElse(null));
+        status.addProperty("url", buildStatus.getUrl());
+        status.addProperty("description", buildStatus.getDescription().orElse(null));
+        status.addProperty("dateAdded", buildStatus.getCreatedDate().getTime());
+        element.add("status", status);
 
         // Find Pull Requests
         PullRequestCommitSearchRequest searchRequest = new PullRequestCommitSearchRequest.Builder(event.getBuildStatus().getCommitId()).build();
