@@ -173,7 +173,7 @@ def run(args):
             request(bearer, "POST", API + "/webhook", status=204, json={
                 "name": name, "scope": scope, "events": keys, "endpoint": args.sink_url, "secret": secret})
         listed = {hook["name"]: hook for hook in request(bearer, "GET", API + "/webhook").json()}
-        assert set(listed) == set(hooks), listed
+        assert {name: hook["scope"] for name, hook in listed.items()} == {name: hook[0] for name, hook in hooks.items()}, listed
         # Avoid putting the token into git arguments, logs, or persistent config.
         env = dict(os.environ, GIT_CONFIG_COUNT="1", GIT_CONFIG_KEY_0="http.extraHeader",
                    GIT_CONFIG_VALUE_0="Authorization: " + bearer.headers["Authorization"])
