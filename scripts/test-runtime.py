@@ -159,13 +159,11 @@ def run(args):
     try:
         # One global hook plus scoped hooks. "runtime-other" is scoped to a
         # repository in another project and must only see that repository.
-        # Scoped hooks avoid pr:event: one of its payloads omits pullRequest,
-        # so its repository cannot be checked.
         sourcegraph = ["repo:refs_changed", "repo:build_status", "pr:activity", "pr:participant:status"]
         hooks = {
             "runtime-test": ("global", ["repo:refs_changed", "repo:build_status", "pr:activity:comment"]),
             "runtime-project": ("project:Project 1", ["repo", "pr:activity"]),
-            "runtime-repository": ("repository:PROJECT_1/rep_1", sourcegraph),
+            "runtime-repository": ("repository:PROJECT_1/rep_1", ["repo", "pr"]),
             "runtime-other": ("repository:SGTEST/allowed", sourcegraph),
         }
         if args.plugin_version.startswith("3."):
@@ -229,6 +227,7 @@ def run(args):
                 assert (status.get("state"), status.get("key"), status.get("url")) == (
                     "SUCCESSFUL", "sourcegraph-runtime-test", "https://ci.example.test/1"), payload
                 return commits[payload["commit"]]
+            assert "pullRequest" in payload, (key, sorted(payload))
             repo_id = payload["pullRequest"]["toRef"]["repository"]["id"]
             assert payload["pullRequest"]["id"] == prs[repo_id], payload["pullRequest"]["id"]
             return repo_id
@@ -238,7 +237,7 @@ def run(args):
         required = {
             "runtime-test": {(key, repo) for key in core for repo in [rep_1, other]},
             "runtime-project": {(key, rep_1) for key in scoped},
-            "runtime-repository": {(key, rep_1) for key in scoped},
+            "runtime-repository": {(key, rep_1) for key in scoped + ["pr:event"]},
             "runtime-other": {(key, other) for key in scoped},
         }
         allowed_repos = {"runtime-test": {rep_1, other}, "runtime-project": {rep_1},
