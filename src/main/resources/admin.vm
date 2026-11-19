@@ -92,7 +92,7 @@
                 <label for="scope">Scope:</label>
                 <input class="text long-field" type="text" name="scope" id="scope" required minlength="1">
                 <div class="description">
-                    Can be either <b>global</b>, <b>project:&lt;project name&gt;</b>, or <b>repository:&lt;project key&gt;/&lt;repository name&gt;</b>
+                    Can be either <b>global</b>, <b>project:&lt;project name&gt;</b>, or <b>repository:&lt;project key&gt;/&lt;repository slug&gt;</b>
                 </div>
             </div>
             <div class="field-group">
@@ -108,26 +108,21 @@
                 <label for="events">Events:</label>
                 <input class="text long-field" type="text" name="events" id="events" required minlength="1">
                 <div class="description" style="max-width:500px">
-                    A comma-separated list of any of the following:
+                    A comma-separated list of event keys. For Sourcegraph, use
+                    <b>repo:refs_changed, repo:build_status, pr:activity, pr:participant:status</b>.
+                    Sourcegraph rejects <code>pr:event</code>, so do not use the <code>pr</code> prefix for Sourcegraph.
                     <br>
-                    <code>pr</code>,
-                    <code>pr:opened</code>,
-                    <code>pr:modified</code>,
-                    <code>pr:reviewer</code>,
-                    <code>pr:reviewer:updated</code>,
-                    <code>pr:reviewer:approved</code>,
-                    <code>pr:reviewer:unapproved</code>,
-                    <code>pr:reviewer:needs_work</code>,
-                    <code>pr:merged</code>,
-                    <code>pr:declined</code>,
-                    <code>pr:deleted</code>,
-                    <code>pr:comment</code>,
-                    <code>pr:comment:added</code>,
-                    <code>pr:comment:edited</code>,
-                    <code>pr:comment:delete</code>,
-                    <code>repo</code>,
+                    Keys sent by this plugin:
+                    <code>repo:refs_changed</code>,
                     <code>repo:build_status</code>,
-                    <code>repo:refs_changed</code>
+                    <code>pr:activity:event</code>,
+                    <code>pr:activity:rescope</code>,
+                    <code>pr:activity:merge</code>,
+                    <code>pr:activity:comment</code>,
+                    <code>pr:activity:reviewers</code>,
+                    <code>pr:participant:status</code>,
+                    <code>pr:event</code>.
+                    A prefix such as <code>repo</code>, <code>pr</code> or <code>pr:activity</code> subscribes to every key under it.
                 </div>
             </div>
             <div class="field-group">
