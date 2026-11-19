@@ -206,7 +206,7 @@ public class WebhookRegistry {
         switch (selector) {
             case "repository":
                 Repository repository = repositories.getById(id);
-                return repository == null ? "" : selector + ":" + repository.getProject().getName() + "/" + repository.getName();
+                return repository == null ? "" : selector + ":" + repository.getProject().getKey() + "/" + repository.getSlug();
             case "project":
                 Project project = projects.getById(id);
                 return project == null ? "" : selector + ":" + project.getName();
