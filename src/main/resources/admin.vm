@@ -129,7 +129,7 @@
                 <label for="secret">Secret:</label>
                 <input class="text long-field" type="text" name="secret" id="secret" required minlength="1">
                 <div class="description">
-                    The secret from the uncoming Webhook configuration page in Sourcegraph.
+                    The secret from the incoming webhook configuration page in Sourcegraph.
                 </div>
             </div>
             <div class="buttons-container">
