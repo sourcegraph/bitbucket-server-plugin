@@ -58,7 +58,7 @@ As mentioned above, running `atlas-debug` will run in debug mode. In order to at
 
 # Releasing
 
-The 3.x line targets Bitbucket Data Center 9.0.0–9.6.5 with Java 17, Platform 7 and `javax`. The 4.x `master` branch targets Bitbucket 10 with Java 21 and Jakarta; do not merge 3.x changes into 4.x or build a Bitbucket 9 patch from `master`.
+The `3.x` maintenance branch targets Bitbucket Data Center 9.0.0–9.6.5 with Java 17, Platform 7 and `javax`. The 4.x `master` branch targets Bitbucket 10 with Java 21 and Jakarta; do not merge 3.x changes into 4.x or build a Bitbucket 9 patch from `master`.
 
 For a 3.x security patch, build and test the JAR from the 3.x maintenance branch. Record its SHA-256 and test a fresh Bitbucket 9 installation and a 3.0.1 upgrade, including UPM module activation after restart. Submit that exact tested JAR as a new **Paid via Vendor** Marketplace version with Bitbucket 9 compatibility bounds; do not rebuild it after validation. A submitted version is not released until Marketplace approves it and the public download is available. Download the public artifact and signature, verify the bytes against the tested JAR and run the published artifact on Bitbucket 9 before updating the security finding. Plugin 3.0.2 is Marketplace build 2010081; its public JAR is at <https://marketplace.atlassian.com/download/apps/1231975/version/2010081>.
 
