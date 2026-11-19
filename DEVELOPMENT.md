@@ -82,35 +82,61 @@ the adapter changes; do not infer the customer's bundle from this repository or
 from Sourcegraph master. Fixture/DOM tests alone do not prove code intelligence
 against a real Sourcegraph backend.
 
-The October 2026 verification used a matching Sourcegraph `sg start` stack with
-a normal development license, freshly built frontend/Gitserver and integration
-bundle, and real SCIP indexes against Bitbucket 9.6.5 and 10.5.1. It exercised
-source/history and unified/split PR hovers, unequal diff sides, native text
-selection, definition clicks, populated reference panels and result navigation.
-Private Bitbucket 10 repositories cloned through the native connector with Basic
-auth disabled; wrong bearer credentials failed while valid PATs succeeded.
-
-That testing found two additional bugs: PR file switching kept the previous
-file's hover state, and position-only reference URLs produced empty Explore
-results because the API requires the complete symbol range. Both fixes were
-verified on the real stack, including deleted-file base revisions and head-file
-revisions after switching in both directions. The reference scenario changed
-from zero results to three precise references without changing its index or data.
-The two fixture indexes share exported package/symbol identities, so exported
-definitions may resolve to the equivalent fixture on the other Bitbucket host;
-this does not prove same-repository attribution. Local-symbol navigation and
-reference request repository/path/revision were checked independently.
-
-The Sourcegraph release must include the [shared hover fixes](https://github.com/sourcegraph/sourcegraph/pull/17288),
+**Sourcegraph 8.2.0 or later is required for plugin 4.0.0.** It includes the
+[shared hover fixes](https://github.com/sourcegraph/sourcegraph/pull/17288),
 [Bitbucket adapter and PR lifetime fixes](https://github.com/sourcegraph/sourcegraph/pull/17285),
 [Git bearer-token authentication](https://github.com/sourcegraph/sourcegraph/pull/17287),
 and [reference URL resolution](https://github.com/sourcegraph/sourcegraph/pull/17302).
 Track integration and release selection in [CU-3522](https://linear.app/sourcegraph/issue/CU-3522/ship-bitbucket-data-center-10-compatibility).
-These are development-stack results, not a released Sourcegraph version. The
-earlier mixed-version test against Sourcegraph 6.12.0 is not a supported upgrade:
+The earlier mixed-version test against Sourcegraph 6.12.0 is not a supported upgrade:
 that server does not serve current `/r/` routes. Do not retrofit only the bundle
 onto an older server. Older native Git HTTP also needs the bearer-token fix or
 the connector's supported SSH configuration when Bitbucket disables Basic auth.
+
+## Published 4.0.0 release and validation
+
+Published on November 19, 2026 as Marketplace build **2010071**, Paid via Vendor,
+for Bitbucket Data Center **10.0.2–10.5.2**:
+
+- [Marketplace version](https://marketplace.atlassian.com/apps/1231975/sourcegraph-for-bitbucket/version-history#b2010071)
+- [Published JAR](https://marketplace.atlassian.com/download/apps/1231975/version/2010071)
+- Build source: [`667c44b436d4d59af47adcd897304acac24abc10`](https://github.com/sourcegraph/bitbucket-server-plugin/commit/667c44b436d4d59af47adcd897304acac24abc10), Java 21, `mvn -B -ntp clean verify`.
+- JAR SHA-256: `c97c7ba78eb735519d6ddbb373f41316f43f313d6715cbcc8710cef344567f74` (3,910,459 bytes).
+
+The public download is byte-identical to the tested candidate; it was not rebuilt
+for post-publication testing. On November 19, the published JAR passed:
+
+- **176/176 fresh-install checks** across 10.0.2, 10.1.5, 10.2.8, 10.2.9,
+  10.3.2, 10.4.3, 10.5.1 and 10.5.2. UPM accepted the genuine Marketplace
+  signature with Atlassian CA trust, rejected missing/invalid signatures, and
+  activated all eight modules. ACL/webhook checks and restart persistence passed
+  with Basic authentication blocked. Marketplace-URL installation was also
+  exercised on 10.2.9 and 10.5.2.
+- **Two upgrade scenarios, 16 checks each:** 9.6.5 with public 3.0.1 to 10.2.9
+  and 10.5.2 with published 4.0.0. Bitbucket disables user-installed apps during
+  the major upgrade; the replacement plugin needed an explicit **Enable** in
+  Manage apps. Configuration and existing webhooks survived, including real push
+  delivery with valid HMAC and persistence after restart. Fresh installs enabled
+  automatically.
+- **114/114 Chromium code-intelligence checks** against released Sourcegraph
+  8.2.0 on 10.2.9, 10.5.2 and the 9.6.5/3.0.1 control. Coverage included source,
+  history, unified/split PRs with unequal line numbers, modified/deleted/added
+  file switches, same-repository definitions and reference navigation. Distinct
+  fixture package identities prevented cross-host symbol attribution. Private
+  bearer-token cloning also passed on both Bitbucket 10 integration fixtures
+  with Basic blocked; incorrect credentials failed.
+- **16/16 Bitbucket 9 control checks** on freshly installed public 3.0.1. Its
+  Marketplace bytes and GCS `latest.jar` still matched the checksum above in
+  the runtime-test section. UPM 7.1.9 on this control does not enforce signatures.
+
+These were single-node H2 Docker fixtures, with simulated major-version upgrades,
+not cluster, production-database or performance certification. Sourcegraph ran
+unlicensed, with private repositories tested one at a time; licensed permission
+sync and Sourcegraph-side connector webhooks were not exercised. UPM installs
+used REST paths, not the Find apps UI. Browser coverage was Chromium only.
+Two unchanged browser limitations also occur on the Bitbucket 9 control: an open
+tooltip can remain after changing unified/split mode until the next hover, and
+single-commit pages have no hovers.
 
 ## Release without breaking Bitbucket 9
 
@@ -129,10 +155,11 @@ the Marketplace listing and (if used) the GCS bucket. Then:
 3. Leave existing `latest.jar` and the 3.0.1 Marketplace version intact for
    Bitbucket 9. If archiving `3.0.1.jar`, copy the verified existing artifact;
    never rebuild it from the Jakarta branch. Do not extend its bounds to 10.x.
-4. Submit a new **4.0.0** Data Center Marketplace version for app key
+4. Submit a new Data Center Marketplace version for app key
    `com.sourcegraph.plugins.sourcegraph-bitbucket`, with a new unique build number
-   greater than 2010051. Set the Bitbucket minimum to the earliest verified
-   version (10.0.2) and maximum to the latest verified version (10.5.1); refresh
+   greater than the latest existing build (4.0.0 uses 2010071). Set the Bitbucket
+   minimum to the earliest verified version (10.0.2) and maximum to the latest
+   verified version (10.5.2 for 4.0.0); refresh
    Atlassian's feeds before submission. Do not claim untested 10.0.0/10.0.1.
 5. Marketplace signs distributed artifacts. For direct upload, use a separately
    approved vendor signing identity and distribute the detached signature and
