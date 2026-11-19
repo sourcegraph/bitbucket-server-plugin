@@ -2,6 +2,8 @@
 
 The Sourcegraph Bitbucket Server plugin provides an implementation for webhooks that supports listening to events at a global, project, or repository scope. To send them to Sourcegraph, follow [Incoming webhooks](https://sourcegraph.com/docs/admin/webhooks/incoming#bitbucket-server).
 
+A global webhook receives events from every repository. A project-scoped webhook receives only events from repositories in that project, and a repository-scoped webhook only events from that repository. This applies to every event: pushes and build statuses use the repository they happened in, and pull request events use the pull request's target repository.
+
 ## Contents
 
 - [Events](#events)
