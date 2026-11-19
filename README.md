@@ -26,7 +26,7 @@ The plugin also has the optional functionality to enable **faster ACL permission
 4. Locate "Sourcegraph for Bitbucket" via search.
 5. Click Install to download and install your app.
 
-#### Via file upload
+#### Via file upload (Bitbucket 9)
 
 1. Log in to Bitbucket Server as an admin.
 2. Navigate to the Bitbucket admin page.
@@ -35,8 +35,10 @@ The plugin also has the optional functionality to enable **faster ACL permission
 5. In the **From this URL** field, paste the following URL:
 
 ```
-https://storage.googleapis.com/sourcegraph-for-bitbucket-server/latest.jar
+https://marketplace.atlassian.com/download/apps/1231975/version/2010081
 ```
+
+This is the Marketplace-hosted 3.0.2 security update for Bitbucket Data Center 9.0.0–9.6.5. It updates Guava for CVE-2026-102554 and can upgrade an existing 3.0.1 installation without removing its Sourcegraph settings or webhooks. The GCS `latest.jar` URL still serves 3.0.1; do not use it to install this update. For Bitbucket 10, use plugin 4.0.0 instead.
 
 ### Updating
 
@@ -46,7 +48,7 @@ Installing the Sourcegraph for Bitbucket Server via the Atlassian marketplace wi
 
 #### Via file upload
 
-Follow the steps in [Installation](#installation).
+Follow the steps in [Installation](#installation) with the versioned Marketplace URL above.
 
 ### Configuration
 
