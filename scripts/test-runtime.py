@@ -225,6 +225,9 @@ def run(args):
             if key == "repo:refs_changed":
                 return payload["repository"]["id"]
             if key == "repo:build_status":
+                status = payload.get("status") or {}
+                assert (status.get("state"), status.get("key"), status.get("url")) == (
+                    "SUCCESSFUL", "sourcegraph-runtime-test", "https://ci.example.test/1"), payload
                 return commits[payload["commit"]]
             repo_id = payload["pullRequest"]["toRef"]["repository"]["id"]
             assert payload["pullRequest"]["id"] == prs[repo_id], payload["pullRequest"]["id"]
