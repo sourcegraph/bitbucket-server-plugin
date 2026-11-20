@@ -12,7 +12,7 @@ mvn -B -ntp clean verify
 
 `.mvn/settings.xml` supplies Atlassian and Central repositories for dependencies
 and Maven plugins; the Atlassian SDK is not required to package the app. The JAR
-is `target/sourcegraph-bitbucket-4.0.0.jar`. Packaging alone does not prove OSGi
+is `target/sourcegraph-bitbucket-4.0.1.jar`. Packaging alone does not prove OSGi
 activation: there are no JVM unit tests; the public-interface runtime suite below
 is the regression check for this migration.
 
@@ -32,7 +32,7 @@ new, disposable directory. It contains development credentials and a license;
 never commit it, upload raw logs, or use it as production data.
 
 ```sh
-amp orb service start bitbucket-test --command "$PWD/scripts/run-bitbucket.sh 10.5.1 $PWD/target/sourcegraph-bitbucket-4.0.0.jar 7990 /tmp/bitbucket-test"
+amp orb service start bitbucket-test --command "$PWD/scripts/run-bitbucket.sh 10.5.1 $PWD/target/sourcegraph-bitbucket-4.0.1.jar 7990 /tmp/bitbucket-test"
 uv run scripts/test-runtime.py --url http://localhost:7990
 amp orb service stop bitbucket-test
 sudo rm -rf /tmp/bitbucket-test # only the disposable home created above

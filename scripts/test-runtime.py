@@ -278,7 +278,7 @@ def run(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--url", required=True)
-    parser.add_argument("--plugin-version", default="4.0.0")
+    parser.add_argument("--plugin-version", default="4.0.1")
     parser.add_argument("--sink-bind", default="0.0.0.0")
     parser.add_argument("--sink-port", type=int, default=8765)
     parser.add_argument("--sink-url", default="http://172.17.0.1:8765/")
