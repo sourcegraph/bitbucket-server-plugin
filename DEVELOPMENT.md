@@ -84,7 +84,7 @@ the adapter changes; do not infer the customer's bundle from this repository or
 from Sourcegraph master. Fixture/DOM tests alone do not prove code intelligence
 against a real Sourcegraph backend.
 
-**Sourcegraph 8.2.0 or later is required for plugin 4.0.0.** It includes the
+**Sourcegraph 8.2.0 or later is required for plugin 4.x.** It includes the
 [shared hover fixes](https://github.com/sourcegraph/sourcegraph/pull/17288),
 [Bitbucket adapter and PR lifetime fixes](https://github.com/sourcegraph/sourcegraph/pull/17285),
 [Git bearer-token authentication](https://github.com/sourcegraph/sourcegraph/pull/17287),
@@ -94,6 +94,27 @@ The earlier mixed-version test against Sourcegraph 6.12.0 is not a supported upg
 that server does not serve current `/r/` routes. Do not retrofit only the bundle
 onto an older server. Older native Git HTTP also needs the bearer-token fix or
 the connector's supported SSH configuration when Bitbucket disables Basic auth.
+
+## Published 4.0.1 release and validation
+
+Published on November 20, 2026 as Marketplace build **2010091**, Paid via Vendor,
+for Bitbucket Data Center **10.0.2–10.5.2**. It fixes project- and repository-scoped
+webhooks, `repo:build_status` payloads without `status`, `pr:event` for requested
+actions, and the listed repository scope format.
+
+- [Marketplace version](https://marketplace.atlassian.com/apps/1231975/sourcegraph-for-bitbucket/version-history#b2010091)
+- [Published JAR](https://marketplace.atlassian.com/download/apps/1231975/version/2010091)
+- Build source: tag `v4.0.1`, [`ea3ed7f`](https://github.com/sourcegraph/bitbucket-server-plugin/commit/ea3ed7f74501964d5b3017ea9a0dc67abb878be6), Java 21, `mvn -B -ntp clean verify`.
+- JAR SHA-256: `689a2e7842252d3da99e4be8eec84428f9ecac2438893a3923bfc54fbf6ad55f` (3,910,841 bytes).
+
+The public download is byte-identical to the tested candidate. Before publication
+the candidate passed the runtime suite on 10.0.2, 10.1.5, 10.2.8, 10.2.9, 10.3.2,
+10.4.3, 10.5.1 and 10.5.2. After publication, on 10.5.2 with only the Atlassian CA
+bundle v2 trusted, UPM rejected unsigned and dev-signed uploads and accepted the
+published JAR with its Marketplace `signature.json` as an upgrade over published
+4.0.0. Config, webhook IDs and scopes survived, webhooks created on 4.0.0 delivered
+within their scope, and everything persisted after a restart. The Marketplace v2
+REST API now returns 410, so check version metadata in the vendor UI.
 
 ## Published 4.0.0 release and validation
 
@@ -166,10 +187,13 @@ the Marketplace listing and (if used) the GCS bucket. Then:
    a 3.x JAR from the Jakarta branch or extend its bounds to 10.x.
 4. Submit a new Data Center Marketplace version for app key
    `com.sourcegraph.plugins.sourcegraph-bitbucket`, with a new unique build number
-   greater than the latest existing build (4.0.0 uses 2010071). Set the Bitbucket
+   greater than the latest existing build (4.0.1 uses 2010091; the form pre-fills the next one). Set the Bitbucket
    minimum to the earliest verified version (10.0.2) and maximum to the latest
-   verified version (10.5.2 for 4.0.0); refresh
+   verified version (10.5.2 for 4.0.1); refresh
    Atlassian's feeds before submission. Do not claim untested 10.0.0/10.0.1.
+   The form copies bounds and release text from the last submitted version (3.x
+   or 4.x), and the Make public wizard defaults the payment model to Free; set
+   Paid via vendor.
 5. Marketplace signs distributed artifacts. For direct upload, use a separately
    approved vendor signing identity and distribute the detached signature and
    certificate via a trusted channel. The customer must configure UPM's trust

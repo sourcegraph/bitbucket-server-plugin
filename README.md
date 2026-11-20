@@ -15,11 +15,11 @@ The plugin also has the optional functionality to enable **faster ACL permission
   [`3.x` branch](https://github.com/sourcegraph/bitbucket-server-plugin/tree/3.x),
   not `master`.
 - **Bitbucket Data Center 10.0.2–10.5.2:** use the published
-  [plugin **4.0.0**](https://marketplace.atlassian.com/apps/1231975/sourcegraph-for-bitbucket/version-history#b2010071),
+  [plugin **4.0.1**](https://marketplace.atlassian.com/apps/1231975/sourcegraph-for-bitbucket/version-history#b2010091),
   which uses Java 21 and Jakarta and requires **Sourcegraph 8.2.0 or later**.
   Do not install the Bitbucket 9 JAR or merely widen its compatibility bounds.
 
-Upgrade Sourcegraph to **8.2.0 or later before installing plugin 4.0.0**. That
+Upgrade Sourcegraph to **8.2.0 or later before installing plugin 4.x**. That
 release includes the Bitbucket browser adapter and Git bearer-token cloning fixes.
 Installing the JAR does not update your Sourcegraph instance's integration bundle. See
 [development and release guidance](DEVELOPMENT.md) for verification and publishing.
@@ -32,7 +32,7 @@ re-enable Basic authentication just to work around an older connector.
 
 ### Prerequisites
 
-1. Plugin 4.0.0 requires a Sourcegraph instance running **8.2.0 or later**. The historical v3.6 minimum applies only to older plugin versions, not Bitbucket 10.
+1. Plugin 4.x requires a Sourcegraph instance running **8.2.0 or later**. The historical v3.6 minimum applies only to older plugin versions, not Bitbucket 10.
 2. Your Sourcegraph instance should have a Bitbucket Server [code host connection](https://sourcegraph.com/docs/admin/code_hosts/bitbucket_server) configured.
 3. The `corsOrigin` property should be set in [site configuration](https://sourcegraph.com/docs/admin/config/site_config) to include the URL of your Bitbucket Server instance. Example value:
 
@@ -67,7 +67,7 @@ UPM signature verification by default; do not disable it to install this plugin.
 https://storage.googleapis.com/sourcegraph-for-bitbucket-server/latest.jar
 ```
 
-This URL serves plugin 3.0.2 for Bitbucket 9. For Bitbucket 10, install 4.0.0
+This URL serves plugin 3.0.2 for Bitbucket 9. For Bitbucket 10, install 4.0.1
 through Marketplace; the GCS `4.0.0.jar` archive is not a signed direct-install
 alternative without a separately approved signature and trusted certificate.
 
@@ -76,11 +76,17 @@ alternative without a separately approved signature and trusted certificate.
 #### Upgrading from Bitbucket 9 to 10
 
 Upgrade Sourcegraph to 8.2.0 or later first, then follow Atlassian's Bitbucket
-upgrade procedure and install plugin 4.0.0 from Marketplace. Bitbucket disables
+upgrade procedure and install plugin 4.0.1 from Marketplace. Bitbucket disables
 user-installed apps during the major upgrade, so the replacement plugin may
 remain disabled. In **Manage apps**, select **Sourcegraph for Bitbucket** and
 click **Enable** if needed. Check the Sourcegraph URL and existing webhooks;
 both were preserved in our upgrade tests. Fresh installations enable automatically.
+
+#### Upgrading from 4.0.0 to 4.0.1
+
+Update the app in **Manage apps**; settings and webhooks are kept. Project- and
+repository-scoped webhooks start receiving pull request events, and stop receiving
+pushes and build statuses from repositories outside their scope.
 
 #### Via the Atlassian marketplace
 
