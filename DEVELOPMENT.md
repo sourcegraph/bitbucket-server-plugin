@@ -125,8 +125,8 @@ for Bitbucket Data Center **10.0.2–10.5.2**:
 Java 17 / `javax` patches on the separate
 [`3.x` branch](https://github.com/sourcegraph/bitbucket-server-plugin/tree/3.x).
 Its published 3.0.2 release fixes CVE-2026-102554, and 3.0.3 (Marketplace build
-2010101) backports the 4.0.1 webhook fixes. GCS `latest.jar` and `3.0.2.jar` still
-serve 3.0.2, while `3.0.1.jar` archives the previous one.
+2010101) backports the 4.0.1 webhook fixes. GCS `latest.jar` and `3.0.3.jar` serve
+3.0.3, while `3.0.1.jar` and `3.0.2.jar` archive earlier releases.
 
 - [Marketplace version](https://marketplace.atlassian.com/apps/1231975/sourcegraph-for-bitbucket/version-history#b2010071)
 - [Published JAR](https://marketplace.atlassian.com/download/apps/1231975/version/2010071)
@@ -157,7 +157,7 @@ for post-publication testing. On November 19, the published JAR passed:
   with Basic blocked; incorrect credentials failed.
 - **16/16 Bitbucket 9 control checks** on freshly installed public 3.0.1. At
   test time, Marketplace 3.0.1 and GCS `latest.jar` matched the checksum above
-  in the runtime-test section; `latest.jar` now serves 3.0.2. UPM 7.1.9 on
+  in the runtime-test section; `latest.jar` now serves 3.0.3. UPM 7.1.9 on
   this control does not enforce signatures.
 
 These were single-node H2 Docker fixtures, with simulated major-version upgrades,
@@ -180,13 +180,10 @@ the Marketplace listing and (if used) the GCS bucket. Then:
 
 1. Build and runtime-test the candidate from the release commit. Keep the JAR and
    its SHA-256; do not rebuild between verification, signing, and publication.
-2. Run `./scripts/release.sh 4.0.0` to check the artifact version and checksum. This
-   is local-only. `--upload` explicitly uploads an immutable `4.0.0.jar` to GCS
-   using a generation precondition; it refuses to overwrite existing bytes.
-3. Leave `latest.jar` on the Bitbucket 9-compatible 3.x line and keep the
+2. Leave `latest.jar` on the Bitbucket 9-compatible 3.x line and keep the
    3.0.1 Marketplace version and GCS `3.0.1.jar` archive intact. Never rebuild
    a 3.x JAR from the Jakarta branch or extend its bounds to 10.x.
-4. Submit a new Data Center Marketplace version for app key
+3. Submit a new Data Center Marketplace version for app key
    `com.sourcegraph.plugins.sourcegraph-bitbucket`, with a new unique build number
    greater than the latest existing build (4.0.1 uses 2010091; the form pre-fills the next one). Set the Bitbucket
    minimum to the earliest verified version (10.0.2) and maximum to the latest
@@ -195,14 +192,19 @@ the Marketplace listing and (if used) the GCS bucket. Then:
    The form copies bounds and release text from the last submitted version (3.x
    or 4.x), and the Make public wizard defaults the payment model to Free; set
    Paid via vendor.
-5. Marketplace signs distributed artifacts. For direct upload, use a separately
+4. Marketplace signs distributed artifacts. For direct upload, use a separately
    approved vendor signing identity and distribute the detached signature and
    certificate via a trusted channel. The customer must configure UPM's trust
    store. Do not tell customers to disable signature verification.
-6. Download the published artifact, compare its digest, check Marketplace bounds,
+5. Download the published artifact, compare its digest, check Marketplace bounds,
    install through UPM with signature verification enabled, and record the
    Sourcegraph release containing the frontend fix. Tagging and publishing are
    explicit release actions, not consequences of packaging or a master push.
+6. Optionally archive the published bytes on GCS with
+   `./scripts/release.sh VERSION MARKETPLACE_BUILD SHA256`. It downloads the
+   public Marketplace JAR and checks its digest and bundle version; `--upload`
+   then creates an immutable public `VERSION.jar` with `gcloud` (it refuses to
+   overwrite an existing object). It never touches `latest.jar` and refuses 3.x.
 
 For a disposable signing test, generate an Ed25519 key/certificate with codeSigning
 usage, place the public certificate in `<Bitbucket shared home>/upmconfig/truststore`
