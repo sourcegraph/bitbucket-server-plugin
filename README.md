@@ -68,7 +68,7 @@ https://storage.googleapis.com/sourcegraph-for-bitbucket-server/latest.jar
 ```
 
 This URL serves plugin 3.0.3 for Bitbucket 9. For Bitbucket 10, install 4.0.1
-through Marketplace; the GCS `4.0.0.jar` archive is not a signed direct-install
+through Marketplace; the GCS `4.0.0.jar` and `4.0.1.jar` archives are not a signed direct-install
 alternative without a separately approved signature and trusted certificate.
 
 ### Updating
