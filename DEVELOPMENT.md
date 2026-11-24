@@ -124,8 +124,9 @@ for Bitbucket Data Center **10.0.2–10.5.2**:
 `master` is the Bitbucket 10 / Java 21 / Jakarta line. Maintain Bitbucket 9 /
 Java 17 / `javax` patches on the separate
 [`3.x` branch](https://github.com/sourcegraph/bitbucket-server-plugin/tree/3.x).
-Its published 3.0.2 release fixes CVE-2026-102554; GCS `latest.jar` and
-`3.0.2.jar` serve that release, while `3.0.1.jar` archives the previous one.
+Its published 3.0.2 release fixes CVE-2026-102554, and 3.0.3 (Marketplace build
+2010101) backports the 4.0.1 webhook fixes. GCS `latest.jar` and `3.0.2.jar` still
+serve 3.0.2, while `3.0.1.jar` archives the previous one.
 
 - [Marketplace version](https://marketplace.atlassian.com/apps/1231975/sourcegraph-for-bitbucket/version-history#b2010071)
 - [Published JAR](https://marketplace.atlassian.com/download/apps/1231975/version/2010071)
